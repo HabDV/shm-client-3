@@ -21,8 +21,10 @@ import Payments from './pages/Payments';
 import Withdrawals from './pages/Withdrawals';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import Tickets from './pages/Tickets';
 
 const theme = createTheme({
+  primaryColor: 'blue',
   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif',
   defaultRadius: 'md',
   colors: {
@@ -292,6 +294,7 @@ function AppContent() {
         <Box px="md">
           <Routes>
             <Route path="/services" element={<Services />} />
+            <Route path="/tickets" element={<Tickets />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/withdrawals" element={<Withdrawals />} />
             <Route path="*" element={<Profile />} />
@@ -386,6 +389,7 @@ function AppContent() {
       <AppShell.Main>
         <Routes>
           <Route path="/services" element={<Services />} />
+          <Route path="/tickets" element={<Tickets />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/withdrawals" element={<Withdrawals />} />
           <Route path="*" element={<Profile />} />

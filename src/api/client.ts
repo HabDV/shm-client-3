@@ -170,8 +170,10 @@ export interface PasskeyAuthOptions {
 }
 
 export const passkeyApi = {
-  list: () => api.get<{ data: { credentials: PasskeyCredential[]; enabled: boolean } }>('/user/passkey/list'),
-  registerOptions: () => api.post<{ data: PasskeyRegisterOptions }>('/user/passkey/register/options'),
+  list: () => api.get<{ data: { credentials: PasskeyCredential[]; enabled: boolean } }>('/user/passkey'),
+  rename: (credentialId: string, name: string) => api.post('/user/passkey', { credential_id: credentialId, name }),
+  delete: (credentialId: string) => api.delete('/user/passkey?credential_id=' + encodeURIComponent(credentialId)),
+  registerOptions: () => api.get<{ data: PasskeyRegisterOptions }>('/user/passkey/register'),
   registerComplete: (data: {
     credential_id: string;
     rawId: string;
@@ -180,10 +182,8 @@ export const passkeyApi = {
       attestationObject: string;
     };
     name?: string;
-  }) => api.post('/user/passkey/register/complete', data),
-  delete: (credentialId: string) => api.post('/user/passkey/delete', { credential_id: credentialId }),
-  rename: (credentialId: string, name: string) => api.post('/user/passkey/rename', { credential_id: credentialId, name }),
-  authOptionsPublic: () => api.post<{ data: PasskeyAuthOptions }>('/user/passkey/auth/options/public', {}),
+  }) => api.post('/user/passkey/register', data),
+  authOptionsPublic: () => api.get<{ data: PasskeyAuthOptions }>('/user/auth/passkey', {}),
   authPublic: (data: {
     credential_id: string;
     rawId: string;
@@ -193,7 +193,7 @@ export const passkeyApi = {
       signature: string;
       userHandle?: string;
     };
-  }) => api.post<{ data: { id: string } }>('/user/passkey/auth/public', data),
+  }) => api.post<{ data: { id: string } }>('/user/auth/passkey', data),
 };
 
 // Tickets API
@@ -207,7 +207,14 @@ export const ticketApi = {
     ticket_type?: string;
     user_service_id?: number;
   }) => api.put('/user/ticket', data),
-  sendMessage: (ticketId: number, message: string, media?: Array<{name: string; type: string; size: number; data: string}>) =>
-    api.post(`/user/ticket/${ticketId}/message`, { message, media }),
-  close: (ticketId: number) => api.post(`/user/ticket/${ticketId}/close`),
+  sendMessage: (
+    ticketId: number,
+    message: string,
+    media?: Array<{
+      name: string;
+      type: string;
+      size: number;
+      data: string
+    }>) => api.post(`/user/ticket/${ticketId}`, { message, media }),
+  close: (ticketId: number) => api.delete(`/user/ticket/${ticketId}`),
 };
