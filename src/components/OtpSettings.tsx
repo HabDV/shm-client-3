@@ -6,7 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { otpApi, OtpStatus, OtpSetupResponse } from '../api/client';
 import QrModal from './QrModal';
 
-export default function OtpSettings() {
+interface OtpSettingsProps {
+  embedded?: boolean;
+}
+
+export default function OtpSettings({ embedded = false }: OtpSettingsProps) {
   const { t } = useTranslation();
   const [status, setStatus] = useState<OtpStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -125,6 +129,17 @@ export default function OtpSettings() {
   };
 
   if (loading) {
+    if (embedded) {
+      return (
+        <Stack gap="xs">
+          <Group gap="xs">
+            <IconShieldLock size={18} />
+            <Text fw={500}>{t('otp.title')}</Text>
+          </Group>
+          <Loader size="sm" />
+        </Stack>
+      );
+    }
     return (
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Stack align="center" py="md">
@@ -134,45 +149,53 @@ export default function OtpSettings() {
     );
   }
 
+  const mainContent = (
+    <Stack gap={embedded ? "xs" : "md"}>
+      <Group justify="space-between">
+        <Group gap="xs">
+          <IconShieldLock size={embedded ? 18 : 24} />
+          <Text fw={500}>{t('otp.title')}</Text>
+        </Group>
+        {status?.enabled && (
+          <Badge color="green" variant="light">
+            {t('otp.enabled')}
+          </Badge>
+        )}
+      </Group>
+
+      <Text size="sm" c="dimmed">
+        {t('otp.description')}
+      </Text>
+
+      {status?.enabled ? (
+        <Button
+          variant="light"
+          color="red"
+          onClick={() => setDisableModalOpen(true)}
+        >
+          {t('otp.disable')}
+        </Button>
+      ) : (
+        <Button
+          variant="light"
+          color="blue"
+          onClick={handleSetup}
+        >
+          {t('otp.enable')}
+        </Button>
+      )}
+    </Stack>
+  );
+
   return (
     <>
-      <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Stack gap="md">
-          <Group justify="space-between">
-            <Group>
-              <IconShieldLock size={24} />
-              <Text fw={500}>{t('otp.title')}</Text>
-            </Group>
-            {status?.enabled && (
-              <Badge color="green" variant="light">
-                {t('otp.enabled')}
-              </Badge>
-            )}
-          </Group>
-
-          <Text size="sm" c="dimmed">
-            {t('otp.description')}
-          </Text>
-
-          {status?.enabled ? (
-            <Button
-              variant="light"
-              color="red"
-              onClick={() => setDisableModalOpen(true)}
-            >
-              {t('otp.disable')}
-            </Button>
-          ) : (
-            <Button
-              variant="light"
-              color="blue"
-              onClick={handleSetup}
-            >
-              {t('otp.enable')}
-            </Button>
-          )}
-        </Stack>
-      </Card>
+      {embedded ? (
+        mainContent
+      ) : (
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          {mainContent}
+        </Card>
+      )}
 
       {/* Setup Modal */}
       <Modal

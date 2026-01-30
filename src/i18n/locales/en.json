@@ -324,5 +324,8 @@
     "disableTitle": "Disable Password Login",
     "disableConfirm": "After disabling, you will only be able to log in using Passkey. Make sure you have Passkey set up on this and other devices.",
     "disabledInfo": "Password login is disabled. You can only log in using Passkey."
+  },
+  "security": {
+    "changePasswordDescription": "Change your password for logging into your account"
   }
 }

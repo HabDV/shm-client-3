@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Card, Text, Stack, Group, Button, Badge, Alert } from '@mantine/core';
+import { Card, Text, Stack, Group, Button, Badge, Alert, Divider } from '@mantine/core';
 import { IconLock, IconLockOpen, IconAlertCircle } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { passwordAuthApi, PasswordAuthStatus } from '../api/client';
 import ConfirmModal from './ConfirmModal';
 
-export default function PasswordAuthSettings() {
+interface PasswordAuthSettingsProps {
+  embedded?: boolean;
+}
+
+export default function PasswordAuthSettings({ embedded = false }: PasswordAuthSettingsProps) {
   const { t } = useTranslation();
   const [status, setStatus] = useState<PasswordAuthStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,56 +86,68 @@ export default function PasswordAuthSettings() {
 
   // Не показываем если passkey не настроен
   if (!status.passkey_enabled) {
+    // В embedded режиме возвращаем null без Divider
     return null;
   }
 
   const isDisabled = status.password_auth_disabled === 1;
 
+  const mainContent = (
+    <Stack gap="xs">
+      <Group justify="space-between">
+        <Group gap="xs">
+          {isDisabled ? <IconLock size={embedded ? 18 : 20} /> : <IconLockOpen size={embedded ? 18 : 20} />}
+          <Text fw={500}>{t('passwordAuth.title')}</Text>
+        </Group>
+        <Badge color={isDisabled ? 'green' : 'yellow'}>
+          {isDisabled ? t('passwordAuth.disabled') : t('passwordAuth.enabled')}
+        </Badge>
+      </Group>
+
+      <Text size="sm" c="dimmed">
+        {t('passwordAuth.description')}
+      </Text>
+
+      {isDisabled ? (
+        <>
+          <Alert icon={<IconAlertCircle size={16} />} color="blue" variant="light">
+            {t('passwordAuth.disabledInfo')}
+          </Alert>
+          <Button
+            variant="light"
+            color="green"
+            leftSection={<IconLockOpen size={16} />}
+            onClick={handleEnable}
+            loading={enabling}
+          >
+            {t('passwordAuth.enable')}
+          </Button>
+        </>
+      ) : (
+        <Button
+          variant="light"
+          color="red"
+          leftSection={<IconLock size={16} />}
+          onClick={() => setConfirmDisableOpen(true)}
+        >
+          {t('passwordAuth.disable')}
+        </Button>
+      )}
+    </Stack>
+  );
+
   return (
     <>
-      <Card withBorder radius="md" p="lg">
-        <Group justify="space-between" mb="md">
-          <Group gap="xs">
-            {isDisabled ? <IconLock size={20} /> : <IconLockOpen size={20} />}
-            <Text fw={500}>{t('passwordAuth.title')}</Text>
-          </Group>
-          <Badge color={isDisabled ? 'green' : 'yellow'}>
-            {isDisabled ? t('passwordAuth.disabled') : t('passwordAuth.enabled')}
-          </Badge>
-        </Group>
-
-        <Stack gap="md">
-          <Text size="sm" c="dimmed">
-            {t('passwordAuth.description')}
-          </Text>
-
-          {isDisabled ? (
-            <>
-              <Alert icon={<IconAlertCircle size={16} />} color="blue" variant="light">
-                {t('passwordAuth.disabledInfo')}
-              </Alert>
-              <Button
-                variant="light"
-                color="green"
-                leftSection={<IconLockOpen size={16} />}
-                onClick={handleEnable}
-                loading={enabling}
-              >
-                {t('passwordAuth.enable')}
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="light"
-              color="red"
-              leftSection={<IconLock size={16} />}
-              onClick={() => setConfirmDisableOpen(true)}
-            >
-              {t('passwordAuth.disable')}
-            </Button>
-          )}
-        </Stack>
-      </Card>
+      {embedded ? (
+        <>
+          <Divider />
+          {mainContent}
+        </>
+      ) : (
+        <Card withBorder radius="md" p="lg">
+          {mainContent}
+        </Card>
+      )}
 
       <ConfirmModal
         opened={confirmDisableOpen}

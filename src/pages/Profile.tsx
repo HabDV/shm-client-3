@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Card, Text, Stack, Group, Button, TextInput, Avatar, Title, Modal, PasswordInput, Loader, Center, Collapse, useMantineColorScheme } from '@mantine/core';
-import { IconUser, IconPhone, IconBrandTelegram, IconLock, IconWallet, IconCreditCard, IconChevronDown, IconChevronUp, IconCreditCardPay, IconTrash } from '@tabler/icons-react';
+import { Card, Text, Stack, Group, Button, TextInput, Avatar, Title, Modal, Loader, Center, Collapse, useMantineColorScheme } from '@mantine/core';
+import { IconUser, IconPhone, IconBrandTelegram, IconWallet, IconCreditCard, IconChevronDown, IconChevronUp, IconCreditCardPay, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { userApi, telegramApi } from '../api/client';
 import PayModal from '../components/PayModal';
 import PromoModal from '../components/PromoModal';
 import ConfirmModal from '../components/ConfirmModal';
-import PasskeySettings from '../components/PasskeySettings';
-import OtpSettings from '../components/OtpSettings';
-import PasswordAuthSettings from '../components/PasswordAuthSettings';
+import SecuritySettings from '../components/SecuritySettings';
 import { useStore } from '../store/useStore';
 
 interface UserProfile {
@@ -63,8 +61,6 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ full_name: '', phone: '' });
   const [telegramUsername, setTelegramUsername] = useState<string | null>(null);
-  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [promoModalOpen, setPromoModalOpen] = useState(false);
   const [telegramModalOpen, setTelegramModalOpen] = useState(false);
@@ -137,33 +133,6 @@ export default function Profile() {
       notifications.show({
         title: t('common.error'),
         message: t('profile.profileUpdateError'),
-        color: 'red',
-      });
-    }
-  };
-
-  const handleChangePassword = async () => {
-    if (!newPassword) {
-      notifications.show({
-        title: t('common.error'),
-        message: t('profile.enterNewPassword'),
-        color: 'red',
-      });
-      return;
-    }
-    try {
-      await userApi.changePassword(newPassword);
-      setPasswordModalOpen(false);
-      setNewPassword('');
-      notifications.show({
-        title: t('common.success'),
-        message: t('profile.passwordChanged'),
-        color: 'green',
-      });
-    } catch {
-      notifications.show({
-        title: t('common.error'),
-        message: t('profile.passwordChangeError'),
         color: 'red',
       });
     }
@@ -462,43 +431,7 @@ export default function Profile() {
           </Text>
       </Card>
 
-      <PasskeySettings />
-
-      <OtpSettings />
-
-      <PasswordAuthSettings />
-
-      <Card withBorder radius="md" p="lg">
-        <Text fw={500} mb="md">{t('profile.security')}</Text>
-        <Stack gap="md">
-          <Button variant="light" leftSection={<IconLock size={16} />} onClick={() => setPasswordModalOpen(true)}>
-            {t('profile.changePassword')}
-          </Button>
-        </Stack>
-      </Card>
-
-      <Modal
-        opened={passwordModalOpen}
-        onClose={() => { setPasswordModalOpen(false); setNewPassword(''); }}
-        title={t('profile.changePassword')}
-      >
-        <Stack gap="md">
-          <PasswordInput
-            label={t('profile.newPassword')}
-            placeholder={t('profile.newPasswordPlaceholder')}
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <Group justify="flex-end">
-            <Button variant="light" onClick={() => { setPasswordModalOpen(false); setNewPassword(''); }}>
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={handleChangePassword}>
-              {t('common.save')}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+      <SecuritySettings />
 
       <PayModal opened={payModalOpen} onClose={() => setPayModalOpen(false)} />
 

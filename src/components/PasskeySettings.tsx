@@ -27,7 +27,11 @@ function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-export default function PasskeySettings() {
+interface PasskeySettingsProps {
+  embedded?: boolean;
+}
+
+export default function PasskeySettings({ embedded = false }: PasskeySettingsProps) {
   const { t } = useTranslation();
   const [credentials, setCredentials] = useState<PasskeyCredential[]>([]);
   const [loading, setLoading] = useState(true);
@@ -231,108 +235,136 @@ export default function PasskeySettings() {
   };
 
   if (!isWebAuthnSupported) {
-    return (
-      <Card withBorder radius="md" p="lg">
-        <Group mb="md">
-          <IconFingerprint size={24} />
+    const content = (
+      <>
+        <Group gap="xs" mb={embedded ? "xs" : "md"}>
+          <IconFingerprint size={embedded ? 18 : 24} />
           <Text fw={500}>{t('passkey.title')}</Text>
         </Group>
         <Text size="sm" c="dimmed">
           {t('passkey.notSupported')}
         </Text>
+      </>
+    );
+
+    if (embedded) {
+      return <Stack gap="xs">{content}</Stack>;
+    }
+
+    return (
+      <Card withBorder radius="md" p="lg">
+        {content}
       </Card>
     );
   }
 
   if (loading) {
-    return (
-      <Card withBorder radius="md" p="lg">
-        <Group mb="md">
-          <IconFingerprint size={24} />
+    const content = (
+      <>
+        <Group gap="xs" mb={embedded ? "xs" : "md"}>
+          <IconFingerprint size={embedded ? 18 : 24} />
           <Text fw={500}>{t('passkey.title')}</Text>
         </Group>
         <Loader size="sm" />
+      </>
+    );
+
+    if (embedded) {
+      return <Stack gap="xs">{content}</Stack>;
+    }
+
+    return (
+      <Card withBorder radius="md" p="lg">
+        {content}
       </Card>
     );
   }
 
+  const mainContent = (
+    <>
+      <Group justify="space-between" mb={embedded ? "xs" : "md"}>
+        <Group gap="xs">
+          <IconFingerprint size={embedded ? 18 : 24} />
+          <Text fw={500}>{t('passkey.title')}</Text>
+          {credentials.length > 0 && (
+            <Badge color="green" variant="light" size="sm">
+              {t('passkey.enabled')}
+            </Badge>
+          )}
+        </Group>
+        <Button
+          variant="light"
+          size="xs"
+          leftSection={<IconPlus size={14} />}
+          onClick={handleRegister}
+          loading={registering}
+        >
+          {t('passkey.add')}
+        </Button>
+      </Group>
+
+      {credentials.length === 0 ? (
+        <Text size="sm" c="dimmed">
+          {t('passkey.noPasskeys')}
+        </Text>
+      ) : (
+        <Stack gap="sm">
+          {credentials.map((credential) => (
+            <Box
+              key={credential.id}
+              p="sm"
+              style={(theme) => ({
+                border: `1px solid ${theme.colors.gray[3]}`,
+                borderRadius: theme.radius.sm,
+              })}
+            >
+              <Group justify="space-between">
+                <Group>
+                  <IconDeviceMobile size={20} />
+                  <div>
+                    <Text size="sm" fw={500}>{credential.name}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('passkey.createdAt')}: {formatDate(credential.created_at)}
+                    </Text>
+                  </div>
+                </Group>
+                <Group gap="xs">
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => openRenameModal(credential)}
+                    title={t('passkey.rename')}
+                  >
+                    <IconEdit size={16} />
+                  </ActionIcon>
+                  <ActionIcon
+                    variant="subtle"
+                    color="red"
+                    onClick={() => openDeleteModal(credential)}
+                    title={t('common.delete')}
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Group>
+              </Group>
+            </Box>
+          ))}
+        </Stack>
+      )}
+
+      <Text size="xs" c="dimmed" mt="md">
+        {t('passkey.description')}
+      </Text>
+    </>
+  );
+
   return (
     <>
-      <Card withBorder radius="md" p="lg">
-        <Group justify="space-between" mb="md">
-          <Group>
-            <IconFingerprint size={24} />
-            <Text fw={500}>{t('passkey.title')}</Text>
-            {credentials.length > 0 && (
-              <Badge color="green" variant="light" size="sm">
-                {t('passkey.enabled')}
-              </Badge>
-            )}
-          </Group>
-          <Button
-            variant="light"
-            size="xs"
-            leftSection={<IconPlus size={14} />}
-            onClick={handleRegister}
-            loading={registering}
-          >
-            {t('passkey.add')}
-          </Button>
-        </Group>
-
-        {credentials.length === 0 ? (
-          <Text size="sm" c="dimmed">
-            {t('passkey.noPasskeys')}
-          </Text>
-        ) : (
-          <Stack gap="sm">
-            {credentials.map((credential) => (
-              <Box
-                key={credential.id}
-                p="sm"
-                style={(theme) => ({
-                  border: `1px solid ${theme.colors.gray[3]}`,
-                  borderRadius: theme.radius.sm,
-                })}
-              >
-                <Group justify="space-between">
-                  <Group>
-                    <IconDeviceMobile size={20} />
-                    <div>
-                      <Text size="sm" fw={500}>{credential.name}</Text>
-                      <Text size="xs" c="dimmed">
-                        {t('passkey.createdAt')}: {formatDate(credential.created_at)}
-                      </Text>
-                    </div>
-                  </Group>
-                  <Group gap="xs">
-                    <ActionIcon
-                      variant="subtle"
-                      color="gray"
-                      onClick={() => openRenameModal(credential)}
-                      title={t('passkey.rename')}
-                    >
-                      <IconEdit size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                      variant="subtle"
-                      color="red"
-                      onClick={() => openDeleteModal(credential)}
-                      title={t('common.delete')}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                </Group>
-              </Box>
-            ))}
-          </Stack>
-        )}
-
-        <Text size="xs" c="dimmed" mt="md">
-          {t('passkey.description')}
-        </Text>
-      </Card>
+      {embedded ? (
+        <Stack gap="xs">{mainContent}</Stack>
+      ) : (
+        <Card withBorder radius="md" p="lg">{mainContent}</Card>
+      )}
 
       <ConfirmModal
         opened={deleteModalOpen}
