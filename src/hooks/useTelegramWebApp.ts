@@ -25,6 +25,8 @@ declare global {
         close: () => void;
         setHeaderColor: (color: string) => void;
         setBackgroundColor: (color: string) => void;
+        openTelegramLink: (url: string) => void;
+        openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
         BackButton: {
           show: () => void;
           hide: () => void;

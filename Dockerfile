@@ -8,7 +8,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:stable-alpine
+FROM nginx:stable-alpine AS client
 
 EXPOSE 80
 

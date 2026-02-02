@@ -1,9 +1,9 @@
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import { useEffect, useState } from 'react';
-import { MantineProvider, createTheme, AppShell, Burger, Group, Text, NavLink, ActionIcon, useMantineColorScheme, useComputedColorScheme, Center, Loader, Box } from '@mantine/core';
+import { MantineProvider, createTheme, AppShell, Group, Burger, Text, NavLink, ActionIcon, useMantineColorScheme, useComputedColorScheme, Center, Loader, Box } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { IconSun, IconMoon, IconLogout, IconHeadset } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
@@ -73,7 +73,12 @@ function WebAppHeader() {
 
   const handleSupportLink = () => {
     if (config.SUPPORT_LINK) {
-      window.open(config.SUPPORT_LINK, '_blank');
+      const tgWebApp = window.Telegram?.WebApp;
+      if (tgWebApp && config.SUPPORT_LINK.includes('t.me')) {
+        tgWebApp.openTelegramLink(config.SUPPORT_LINK);
+      } else {
+        window.open(config.SUPPORT_LINK, '_blank');
+      }
     }
   };
 
@@ -187,11 +192,17 @@ function AppContent() {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading, setUser, setIsLoading, logout } = useStore();
   const [isTelegramWebApp] = useState(isInsideTelegramWebApp);
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { t } = useTranslation();
 
   const handleSupportLink = () => {
     if (config.SUPPORT_LINK) {
-      window.open(config.SUPPORT_LINK, '_blank');
+      const tgWebApp = window.Telegram?.WebApp;
+      if (tgWebApp && isTelegramWebApp && config.SUPPORT_LINK.includes('t.me')) {
+        tgWebApp.openTelegramLink(config.SUPPORT_LINK);
+      } else {
+        window.open(config.SUPPORT_LINK, '_blank');
+      }
     }
   };
 
@@ -270,7 +281,7 @@ function AppContent() {
     return <Login />;
   }
 
-  if (isTelegramWebApp) {
+  if (isTelegramWebApp || isMobile) {
     return (
       <Box style={{ minHeight: '100vh', paddingBottom: 100 }}>
           <WebAppHeader />
