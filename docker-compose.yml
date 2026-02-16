@@ -6,11 +6,7 @@ services:
     ports:
       - "3001:80"
     environment:
-      # API http or fastcgi
-      - API=fastcgi
-      # SHM_URL http://api if API=http 
-      # or SHM_URL=http://core:9082 if API=fastcgi
-      - SHM_URL=http://core:9082
+      - SHM_URL=http://api
       # Optional: custom base path (e.g., /client)
       # - SHM_BASE_PATH=/
       # - TELEGRAM_BOT_NAME=your_bot
@@ -20,6 +16,5 @@ services:
       # - TELEGRAM_WEBAPP_AUTO_AUTH_ENABLE=true
       # - TELEGRAM_WEBAPP_PROFILE=telegram_bot
     depends_on:
-      # core or api (docker service name)
-      - core
+      - api
     restart: unless-stopped

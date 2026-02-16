@@ -1,38 +1,14 @@
 #!/bin/sh
 
-API_MODE="${API:-http}"
-TEMPLATE_DIR="/etc/nginx/templates"
+PROXY_URL=""
+if [ ! -z "$SHM_URL" ]; then
+    PROXY_URL="$SHM_URL"
+elif [ ! -z "$SHM_HOST" ]; then
+    PROXY_URL="$SHM_HOST"
+fi
 
-rm -f /etc/nginx/conf.d/*.conf
-
-if [ "$API_MODE" = "fastcgi" ]; then
-    cp "$TEMPLATE_DIR/fastcgi.conf" /etc/nginx/conf.d/default.conf
-
-    FASTCGI_SERVER=""
-    if [ ! -z "$SHM_HOST" ]; then
-        FASTCGI_SERVER="${SHM_HOST#http://}"
-        FASTCGI_SERVER="${FASTCGI_SERVER#https://}"
-    elif [ ! -z "$SHM_URL" ]; then
-        FASTCGI_SERVER="${SHM_URL#http://}"
-        FASTCGI_SERVER="${FASTCGI_SERVER#https://}"
-    fi
-
-    if [ ! -z "$FASTCGI_SERVER" ]; then
-        sed -i "s|#SERVER|$FASTCGI_SERVER|" /etc/nginx/conf.d/default.conf
-    fi
-else
-    cp "$TEMPLATE_DIR/http.conf" /etc/nginx/conf.d/default.conf
-
-    PROXY_URL=""
-    if [ ! -z "$SHM_URL" ]; then
-        PROXY_URL="$SHM_URL"
-    elif [ ! -z "$SHM_HOST" ]; then
-        PROXY_URL="$SHM_HOST"
-    fi
-
-    if [ ! -z "$PROXY_URL" ]; then
-        sed -i "s|#SHM_URL|$PROXY_URL|" /etc/nginx/conf.d/default.conf
-    fi
+if [ ! -z "$PROXY_URL" ]; then
+    sed -i "s|#SHM_URL|$PROXY_URL|" /etc/nginx/conf.d/default.conf
 fi
 
 if [ ! -z "$SHM_BASE_PATH" ] && [ "$SHM_BASE_PATH" != "/" ]; then

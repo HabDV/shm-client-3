@@ -15,8 +15,7 @@ EXPOSE 80
 COPY entry.sh /entry.sh
 RUN chmod +x /entry.sh
 
-COPY nginx.fastcgi.conf /etc/nginx/templates/fastcgi.conf
-COPY nginx.http.conf /etc/nginx/templates/http.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /app
 
 ENTRYPOINT ["/entry.sh"]
