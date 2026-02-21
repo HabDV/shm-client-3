@@ -1,8 +1,11 @@
-import { Modal, Stack, Center, Text, Button, Group, Tooltip, ActionIcon } from '@mantine/core';
+import { Modal, Stack, Center, Text, Button, Group, Tooltip, ActionIcon, Alert } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { IconCopy, IconCheck, IconDownload } from '@tabler/icons-react';
+import { IconCopy, IconCheck, IconDownload, IconAlertCircle } from '@tabler/icons-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
+import { useMemo } from 'react';
+
+const MAX_QR_DATA_LENGTH = 2900;
 
 interface QrModalProps {
   opened: boolean;
@@ -16,6 +19,10 @@ interface QrModalProps {
 export default function QrModal({ opened, onClose, data, title, filename, onDownload }: QrModalProps) {
   const { t } = useTranslation();
   const { copied, copy } = useCopyToClipboard();
+
+  const isDataTooLong = useMemo(() => {
+    return data ? data.length > MAX_QR_DATA_LENGTH : false;
+  }, [data]);
 
   const handleDownloadQr = () => {
     const svg = document.getElementById('qr-code-svg');
@@ -45,15 +52,21 @@ export default function QrModal({ opened, onClose, data, title, filename, onDown
   return (
     <Modal opened={opened} onClose={onClose} title={title || t('services.qrCode')} size="md">
       <Stack gap="md" align="center">
-        <Center p="md" bg="white" style={{ borderRadius: 8 }}>
-          <QRCodeSVG
-            id="qr-code-svg"
-            value={data}
-            size={256}
-            level="M"
-            includeMargin
-          />
-        </Center>
+        {isDataTooLong ? (
+          <Alert icon={<IconAlertCircle size={16} />} color="orange" title={t('services.qrTooLong')}>
+            {t('services.qrTooLongDesc')}
+          </Alert>
+        ) : (
+          <Center p="md" bg="white" style={{ borderRadius: 8 }}>
+            <QRCodeSVG
+              id="qr-code-svg"
+              value={data}
+              size={256}
+              level="L"
+              includeMargin
+            />
+          </Center>
+        )}
 
         <Text size="xs" c="dimmed" ta="center" style={{ wordBreak: 'break-all', maxWidth: 300 }}>
           {data.length > 100 ? data.substring(0, 100) + '...' : data}
@@ -72,7 +85,7 @@ export default function QrModal({ opened, onClose, data, title, filename, onDown
           </Tooltip>
 
           <Tooltip label={t('services.downloadQr')}>
-            <ActionIcon variant="light" size="lg" onClick={handleDownloadQr}>
+            <ActionIcon variant="light" size="lg" onClick={handleDownloadQr} disabled={isDataTooLong}>
               <IconDownload size={18} />
             </ActionIcon>
           </Tooltip>
