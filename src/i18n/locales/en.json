@@ -1,5 +1,8 @@
 {
   "common": {
+    "notFound": "Not found",
+    "notFoundDesc": "The page you are looking for does not exist",
+    "backToHome": "Back to home",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",

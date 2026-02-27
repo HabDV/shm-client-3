@@ -17,10 +17,6 @@ function build_and_push {
     done
 }
 
-# Set tag from git
-GIT_TAG=$(git describe --abbrev=0 --tags)
-LABELS=("$GIT_TAG")
-
 # Add minor tag
 VERSION_MINOR=$(echo $GIT_TAG | cut -d '.' -f 1,2)
 LABELS+=("$VERSION_MINOR")

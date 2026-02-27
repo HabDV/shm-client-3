@@ -23,6 +23,7 @@ import Payments from './pages/Payments';
 import Withdrawals from './pages/Withdrawals';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import NotFound from './pages/NotFound';
 
 const theme = createTheme({
   primaryColor: 'blue',
@@ -297,7 +298,8 @@ function AppContent() {
             <Route path="/services" element={<Services />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/withdrawals" element={<Withdrawals />} />
-            <Route path="*" element={<Profile />} />
+            <Route path="/" element={<Profile />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Box>
         <BottomNavigation />
@@ -388,7 +390,8 @@ function AppContent() {
           <Route path="/services" element={<Services />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/withdrawals" element={<Withdrawals />} />
-          <Route path="*" element={<Profile />} />
+          <Route path="/" element={<Profile />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AppShell.Main>
     </AppShell>
