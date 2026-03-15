@@ -2,10 +2,10 @@
 
 Клиентский личный кабинет для SHM (Service Hosting Manager).
 
-- 🔐 Авторизация (логин/пароль, Telegram)
+- 🔐 Аутентификация Логин/Пароль, Логин/Пароль + 2FA, Passkey, Telegram widget, Telegram MiniApp
 - 📦 Покупка услуг, возможность остановить и удалить услугу
 - 🔗 Показ QR-кода и ссылки на подписку(Remnawave/marzban)
-- 💳 Пополнение баланса, Удаление автоплатежа
+- 💳 Пополнение баланса, удаление автоплатежа
 - 💸 Прогноз оплаты в профиле
 - 📊 История платежей и списаний
 - 👤 Редактирование профиля
@@ -38,7 +38,7 @@ services:
 
 | Переменная | Описание | По умолчанию |
 |------------|----------|--------------|
-| `SHM_URL` | URL API сервера SHM | `http://shm.local` |
+| `SHM_URL` | URL API сервера SHM | - |
 | `SHM_HOST` | Альтернатива SHM_URL | - |
 | `SHM_BASE_PATH` | Базовый путь (например `/cabinet`) | `/` |
 | `APP_NAME` | Название приложения | `SHM Client` |
@@ -47,15 +47,22 @@ services:
 | `TELEGRAM_WEBAPP_AUTH_ENABLE` | Авторизация через телеграмм вебапп | `false` |
 | `TELEGRAM_WEBAPP_PROFILE` | Название бота (профиля) в SHM | - |
 | `SUPPORT_LINK` | Ссылка на поддержку | - |
-| `RESOLVER` | DNS резолвер для nginx | `127.0.0.11` |
 | `OTP_ENABLE` | Показать настройки OTP | `true` |
 | `PASSKEY_ENABLE` | Показать настройки Passkey | `true` |
-| `BITRIX_WIDGET_SCRIPT_URL` | 	URL виждета Битрих-24 (https://cdn-ru.bitrix24.ru/b********/crm/site_button/loader_****.js) | - |
-| `PROXY_CATEGORY` | Категория прокси чтобы показать ссылку на подписку (vpn-remna) | - |
+| `PASSKEY_AUTH_DISABLED` | Скрыть кнопку авторизации через Passkey | `false` |
+| `BITRIX_WIDGET_SCRIPT_URL` | URL виждета Битрих-24 (https://cdn-ru.bitrix24.ru/b********/crm/site_button/loader_****.js)| - |
+| `PROXY_CATEGORY` | Категория прокси чтобы показать ссылку на подписку (vpn-remna,vpn-trial) | - |
+| `PROXY_CATEGORY_TITLE` | Название категории | VPN Подписка |
 | `PROXY_STORAGE_PREFIX` | префикс для категории proxy в хранилище, например 'vpm_remna_' | 'vpm_mrzb_' |
-| `VPN_CATEGORY` | Категория VPN чтобы показать QR или возможность скачать файл конфигурации (vpn-wg) | - |
+| `VPN_CATEGORY` | Категория VPN чтобы показать QR или возможность скачать файл конфигурации (vpn-wg,vpn-awg) | - |
+| `VPN_CATEGORY_TITLE` | Название категории | VPN |
 | `VPN_STORAGE_PREFIX` | Префикс для категории vpn в хранилище например 'wg_key_' | 'vpn' |
 | `VISIBLE_CATEGORIES` | Категории для отображения при покупке и уже купленных услуг (vpn-mz,vpm-mz-trial)| - |
+| `EMAIL_REQUIRED` | Hе дает пользоваться ЛК пока клиент не введет email | false |
+| `ALLOW_SERVICE_BLOCKED` | Разрешить пользователю блокировать услугу | true |
+| `ALLOW_SERVICE_DELETE` | Разрешить пользователю удалять услугу | true |
+| `ALLOW_SERVICE_CHANGE` | Разрешить пользователю сменить услугу | true |
+| `ALLOW_SERVICE_CHANGE_FORCE` | Разрешить сменить услугу сразу (не спрашивая пользователя) | false |
 
 ### Telegram Widget
 Для работы с авторизацией через Telegram Widget нужно в астройках бота  который указан в `TELGRAM_BOT_NAME` указать домен на котором расположена ваше приложение `shm-client`
