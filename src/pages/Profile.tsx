@@ -141,8 +141,10 @@ export default function Profile() {
         setProfileEmail(data.email || null);
         if (setUserEmail) {
           setUserEmail(data.email || null);
+          setUserEmailVerified(data.email_verified);
         }
         setEmailVerified(data.email_verified || 0 );
+        setUserEmailVerified(data.email_verified || 0);
       } catch {
       } finally {
       }
@@ -267,6 +269,7 @@ export default function Profile() {
         color: 'green',
       });
       setEmailVerified(0);
+      setUserEmailVerified(0);
     } catch {
       notifications.show({
         title: t('common.error'),
