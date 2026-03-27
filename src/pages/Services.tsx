@@ -815,7 +815,15 @@ export default function Services() {
     if (!background) setLoading(true);
     try {
       const response = await api.get('/user/service', { params: { limit: 1000 } });
-      const data: UserService[] = response.data.data || [];
+      const raw: UserService[] = response.data.data || [];
+      const data: UserService[] = raw.map((item: UserService & { category?: string; cost?: string | number; name?: string }) => ({
+        ...item,
+        service: item.service ?? {
+          category: item.category ?? '',
+          cost: typeof item.cost === 'string' ? parseFloat(item.cost) || 0 : (item.cost ?? 0),
+          name: item.name ?? '',
+        },
+      }));
 
       const serviceMap = new Map<number, UserService>();
       data.forEach(s => serviceMap.set(s.user_service_id, { ...s, children: [] }));
