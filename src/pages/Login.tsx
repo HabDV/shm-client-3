@@ -582,13 +582,6 @@ export default function Login() {
                       </Button>
                     </Group>
                   )}
-                  <Button
-                    type="submit"
-                    leftSection={mode === 'login' ? <IconLogin size={18} /> : <IconUserPlus size={18} />}
-                    loading={loading}
-                  >
-                    {mode === 'login' ? t('auth.login') : t('auth.register')}
-                  </Button>
                   {mode === 'register' && config.TERMS_URL && (
                     <Text size="xs" c="dimmed" ta="center">
                       {t('auth.termsText')}{' '}
@@ -604,6 +597,13 @@ export default function Login() {
                       </Text>
                     </Text>
                   )}
+                  <Button
+                    type="submit"
+                    leftSection={mode === 'login' ? <IconLogin size={18} /> : <IconUserPlus size={18} />}
+                    loading={loading}
+                  >
+                    {mode === 'login' ? t('auth.login') : t('auth.register')}
+                  </Button>
                   {mode === 'login' && isWebAuthnSupported && hasTelegramWidget && config.PASSKEY_AUTH_DISABLED === 'false' && (
                     <Button
                       variant="light"
