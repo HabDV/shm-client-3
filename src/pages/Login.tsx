@@ -511,8 +511,8 @@ export default function Login() {
             </div>
 
           </Group>
-          {config.APP_DESCRIPTION && (
-            <Text size="sm" c="dimmed" ta="center" style={{ flex: 'auto' }}>{config.APP_DESCRIPTION}</Text>
+          {(config.APP_DESCRIPTION || t('auth.appDescription')) && (
+            <Text size="sm" c="dimmed" ta="center" style={{ flex: 'auto' }}>{config.APP_DESCRIPTION || t('auth.appDescription')}</Text>
           )}
           <Text size="sm" c="dimmed" ta="center">
               {mode === 'login' ? t('auth.loginTitle') : t('auth.registerTitle')}
@@ -603,6 +603,14 @@ export default function Login() {
                       onChange={(e) => setInviteCode(e.target.value)}
                       required={inviteCodeRequired}
                       withAsterisk={inviteCodeRequired}
+                      description={
+                        inviteCode.trim() && decodeInvite(inviteCode.trim()) === null
+                          ? t('auth.inviteCodeInvalid')
+                          : inviteCodeRequired
+                            ? t('auth.inviteCodeRequiredHint')
+                            : t('auth.inviteCodeOptionalHint')
+                      }
+                      error={inviteCode.trim() && decodeInvite(inviteCode.trim()) === null ? t('auth.inviteCodeInvalid') : undefined}
                     />
                   )}
                   {mode === 'register' && config.CAPTCHA_ENABLED === 'true' && (
