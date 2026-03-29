@@ -17,8 +17,14 @@ else
     sed -i "s|#REMNA_URL|http://localhost|" /etc/nginx/conf.d/default.conf
 fi
 
+if [ ! -z "$REMNA_CADDY_API_KEY" ]; then
+    sed -i "s|#REMNA_CADDY_API_KEY|$REMNA_CADDY_API_KEY|" /etc/nginx/conf.d/default.conf
+else
+    sed -i "s|#REMNA_CADDY_API_KEY||" /etc/nginx/conf.d/default.conf
+fi
+
 if [ ! -z "$REMNA_API_TOKEN" ]; then
-    sed -i "s|#REMNA_API_TOKEN|Bearer $REMNA_API_TOKEN|" /etc/nginx/conf.d/default.conf
+    sed -i "s|#REMNA_API_TOKEN|$REMNA_API_TOKEN|" /etc/nginx/conf.d/default.conf
 else
     sed -i "s|#REMNA_API_TOKEN||" /etc/nginx/conf.d/default.conf
 fi
@@ -114,6 +120,7 @@ window.__APP_CONFIG__ = {
   INVITE_CODE_REQUIRED: "${INVITE_CODE_REQUIRED:-false}",
   PASSWORD_RESET_DISABLED: "${PASSWORD_RESET_DISABLED:-false}",
   REMNA_URL: "${REMNA_URL:-}",
+  REMNA_CADDY_API_KEY: "${REMNA_CADDY_API_KEY:-}",
   REMNA_API_TOKEN: "${REMNA_API_TOKEN:-}"
 };
 EOF

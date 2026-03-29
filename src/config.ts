@@ -67,6 +67,7 @@ interface AppConfig {
   INVITE_CODE_REQUIRED: string;
   PASSWORD_RESET_DISABLED: string;
   REMNA_URL: string;
+  REMNA_CADDY_API_KEY: string;
   REMNA_API_TOKEN: string;
 }
 
@@ -148,6 +149,7 @@ function getConfig(): AppConfig {
     INVITE_CODE_REQUIRED: runtimeConfig?.INVITE_CODE_REQUIRED || import.meta.env.VITE_INVITE_CODE_REQUIRED || 'false',
     PASSWORD_RESET_DISABLED: runtimeConfig?.PASSWORD_RESET_DISABLED || import.meta.env.VITE_PASSWORD_RESET_DISABLED || 'false',
     REMNA_URL: runtimeConfig?.REMNA_URL || import.meta.env.VITE_REMNA_URL || '',
+    REMNA_CADDY_API_KEY: runtimeConfig?.REMNA_CADDY_API_KEY || import.meta.env.VITE_REMNA_CADDY_API_KEY || '',
     REMNA_API_TOKEN: runtimeConfig?.REMNA_API_TOKEN || import.meta.env.VITE_REMNA_API_TOKEN || '',
   };
 }
