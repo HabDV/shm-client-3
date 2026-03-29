@@ -9,6 +9,8 @@ fi
 
 if [ ! -z "$PROXY_URL" ]; then
     sed -i "s|#SHM_URL|$PROXY_URL|" /etc/nginx/conf.d/default.conf
+else
+    sed -i "s|#SHM_URL|http://localhost|" /etc/nginx/conf.d/default.conf
 fi
 
 if [ ! -z "$REMNA_URL" ]; then
@@ -121,7 +123,9 @@ window.__APP_CONFIG__ = {
   PASSWORD_RESET_DISABLED: "${PASSWORD_RESET_DISABLED:-false}",
   REMNA_URL: "${REMNA_URL:-}",
   REMNA_CADDY_API_KEY: "${REMNA_CADDY_API_KEY:-}",
-  REMNA_API_TOKEN: "${REMNA_API_TOKEN:-}"
+  REMNA_API_TOKEN: "${REMNA_API_TOKEN:-}",
+  REMNA_TRAFFIC_STATS_ENABLE: "${REMNA_TRAFFIC_STATS_ENABLE:-false}",
+  REMNA_HWID_DEVICES_ENABLE: "${REMNA_HWID_DEVICES_ENABLE:-false}"
 };
 EOF
 
