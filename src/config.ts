@@ -65,6 +65,7 @@ interface AppConfig {
   NEURAL_BG: string;
   INVITE_CODE_ENABLED: string;
   INVITE_CODE_REQUIRED: string;
+  PASSWORD_RESET_DISABLED: string;
 }
 
 declare global {
@@ -143,6 +144,7 @@ function getConfig(): AppConfig {
     NEURAL_BG: runtimeConfig?.NEURAL_BG || import.meta.env.VITE_NEURAL_BG || 'false',
     INVITE_CODE_ENABLED: runtimeConfig?.INVITE_CODE_ENABLED || import.meta.env.VITE_INVITE_CODE_ENABLED || 'false',
     INVITE_CODE_REQUIRED: runtimeConfig?.INVITE_CODE_REQUIRED || import.meta.env.VITE_INVITE_CODE_REQUIRED || 'false',
+    PASSWORD_RESET_DISABLED: runtimeConfig?.PASSWORD_RESET_DISABLED || import.meta.env.VITE_PASSWORD_RESET_DISABLED || 'false',
   };
 }
 

@@ -5,7 +5,7 @@ import { IconLogin, IconUserPlus, IconHeadset, IconFingerprint, IconShieldLock, 
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { auth, passkeyApi, userApi } from '../api/client';
-import { setCookie, getResetTokenCookie, removeResetTokenCookie, parseAndSaveResetToken, decodeInvite } from '../api/cookie';
+import { setCookie, getResetTokenCookie, removeResetTokenCookie, parseAndSaveResetToken, decodeInvite, getPartnerCookie, encodeInvite } from '../api/cookie';
 import { useStore } from '../store/useStore';
 import TelegramLoginButton, { TelegramUser } from '../components/TelegramLoginButton';
 import { config } from '../config';
@@ -57,27 +57,16 @@ export default function Login() {
       setMode('register');
     }
   }, [location.search]);
-  // Auto-fill invite code from partnerLink URL param
+  // Auto-fill invite code from URL params (?invite= or ?partner_id=) or saved partner cookie
   useEffect(() => {
     if (!inviteCodeEnabled) return;
-    const params = new URLSearchParams(location.search);
-    const partnerLink = params.get('partnerLink');
-    if (partnerLink) {
-      const trimmed = partnerLink.trim();
-      // partnerLink may be a full URL containing ?invite=<base64url> or just the token itself
-      let code = trimmed;
-      try {
-        const url = new URL(trimmed);
-        const inviteParam = url.searchParams.get('invite');
-        if (inviteParam) code = inviteParam.trim();
-      } catch {
-        // not a URL — use as-is (raw token)
-      }
-      // Only accept if it decodes to a valid partner id
-      if (decodeInvite(code) !== null) {
-        setInviteCode(code);
-        setMode('register');
-      }
+
+    // parseAndSavePartnerId() in App.tsx already consumed the URL params and saved to cookie.
+    // Read the saved partner cookie and pre-fill the invite field.
+    const partnerId = getPartnerCookie();
+    if (partnerId) {
+      setInviteCode(encodeInvite(partnerId));
+      setMode('register');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [loading, setLoading] = useState(false);
@@ -764,32 +753,69 @@ export default function Login() {
         title={t('auth.resetPasswordTitle')}
         centered
       >
-        <Stack gap="md">
-          <Text size="sm" c="dimmed">{t('auth.resetPasswordDescription')}</Text>
-          <TextInput
-            label={t('auth.loginOrEmail')}
-            placeholder={t('auth.loginOrEmailPlaceholder')}
-            value={loginOrEmail}
-            onChange={(e) => setLoginOrEmail(e.target.value)}
-            autoFocus
-          />
-          <Group justify="flex-end" gap="sm">
-            <Button variant="default" onClick={() => {
-              setShowResetPassword(false);
-              setResetLoading(false);
-            }}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              leftSection={<IconMailForward size={16} />}
-              onClick={handleResetPassword}
-              loading={resetLoading}
-              disabled={!loginOrEmail}
-            >
-              {t('auth.resetPasswordSend')}
-            </Button>
-          </Group>
-        </Stack>
+        {config.PASSWORD_RESET_DISABLED === 'true' ? (
+          <Stack gap="md">
+            <Text size="sm" c="dimmed" ta="center">{t('auth.resetDisabledText')}</Text>
+            <Group justify="center" gap="sm">
+              {config.TELEGRAM_BOT_NAME && (
+                <Button
+                  leftSection={<IconBrandTelegram size={16} />}
+                  color="blue"
+                  component="a"
+                  href={`https://t.me/${config.TELEGRAM_BOT_NAME}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('auth.resetDisabledBot')}
+                </Button>
+              )}
+              {config.SUPPORT_LINK && (
+                <Button
+                  leftSection={<IconHeadset size={16} />}
+                  variant="light"
+                  component="a"
+                  href={config.SUPPORT_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('auth.resetDisabledSupport')}
+                </Button>
+              )}
+            </Group>
+            <Group justify="flex-end">
+              <Button variant="default" onClick={() => setShowResetPassword(false)}>
+                {t('common.close')}
+              </Button>
+            </Group>
+          </Stack>
+        ) : (
+          <Stack gap="md">
+            <Text size="sm" c="dimmed">{t('auth.resetPasswordDescription')}</Text>
+            <TextInput
+              label={t('auth.loginOrEmail')}
+              placeholder={t('auth.loginOrEmailPlaceholder')}
+              value={loginOrEmail}
+              onChange={(e) => setLoginOrEmail(e.target.value)}
+              autoFocus
+            />
+            <Group justify="flex-end" gap="sm">
+              <Button variant="default" onClick={() => {
+                setShowResetPassword(false);
+                setResetLoading(false);
+              }}>
+                {t('common.cancel')}
+              </Button>
+              <Button
+                leftSection={<IconMailForward size={16} />}
+                onClick={handleResetPassword}
+                loading={resetLoading}
+                disabled={!loginOrEmail}
+              >
+                {t('auth.resetPasswordSend')}
+              </Button>
+            </Group>
+          </Stack>
+        )}
       </Modal>
 
       <Modal
