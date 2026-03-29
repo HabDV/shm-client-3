@@ -127,23 +127,48 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   const [hwidModalOpen, setHwidModalOpen] = useState(false);
   const [hwidDeleteConfirm, setHwidDeleteConfirm] = useState<string | null>(null);
   const [hwidDeleting, setHwidDeleting] = useState(false);
-  const [hwidUserUuid, setHwidUserUuid] = useState<string | null>(null);
+  // UUID кешируется после первого резолва — не делаем повторный запрос к storage
+  const [remnaUserUuid, setRemnaUserUuid] = useState<string | null>(null);
+
+  // Единая функция резолва UUID из storage.
+  // Возвращает закешированный UUID если уже известен.
+  // Пробует: PROXY_STORAGE_PREFIX → vpn_mrzb_ → vpn_remna_
+  const resolveRemnaUuid = async (): Promise<string> => {
+    if (remnaUserUuid) return remnaUserUuid;
+
+    const prefix = config.PROXY_STORAGE_PREFIX || 'vpn_mrzb_';
+    const usi = service.user_service_id;
+    const keys = Array.from(new Set([
+      `${prefix}${usi}`,
+      `vpn_mrzb_${usi}`,
+      `vpn_remna_${usi}`,
+    ]));
+
+    for (const key of keys) {
+      try {
+        const resp = await api.get(`/storage/manage/${key}?format=json`);
+        const uuid: string | undefined =
+          resp.data?.response?.uuid ||
+          resp.data?.uuid ||
+          resp.data?.settings?.remna?.uuid;
+        if (uuid) {
+          setRemnaUserUuid(uuid);
+          return uuid;
+        }
+      } catch {
+        // ключ не найден — пробуем следующий
+      }
+    }
+
+    throw new Error(t('services.remnaUuidNotFound', 'UUID подписки не найден в хранилище'));
+  };
 
   const fetchRemnaTraffic = async () => {
     setTrafficLoading(true);
     setTrafficError(null);
     setTrafficModalOpen(true);
     try {
-      // UUID хранится в storage vpn_remna_{usi} в поле response.uuid или settings.remna.uuid
-      const storageResp = await api.get(`/storage/manage/vpn_mrzb_${service.user_service_id}?format=json`);
-      const uuid: string | undefined =
-        storageResp.data?.response?.uuid ||
-        storageResp.data?.uuid ||
-        storageResp.data?.settings?.remna?.uuid;
-      if (!uuid) {
-        setTrafficError(t('services.remnaUuidNotFound', 'UUID подписки не найден в хранилище'));
-        return;
-      }
+      const uuid = await resolveRemnaUuid();
       const stats = await remnaApi.getSubscriptionByUuid(uuid);
       setTrafficStats(stats);
     } catch (e: unknown) {
@@ -154,21 +179,12 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
     }
   };
 
-  const fetchHwidDevices = async () => {
+  const fetchHwidDevices = async (silent = false) => {
+    if (!silent) setHwidModalOpen(true);
     setHwidLoading(true);
     setHwidError(null);
-    setHwidModalOpen(true);
     try {
-      const storageResp = await api.get(`/storage/manage/vpn_mrzb_${service.user_service_id}?format=json`);
-      const uuid: string | undefined =
-        storageResp.data?.response?.uuid ||
-        storageResp.data?.uuid ||
-        storageResp.data?.settings?.remna?.uuid;
-      if (!uuid) {
-        setHwidError(t('services.remnaUuidNotFound', 'UUID подписки не найден в хранилище'));
-        return;
-      }
-      setHwidUserUuid(uuid);
+      const uuid = await resolveRemnaUuid();
       const result = await remnaApi.getHwidDevices(uuid);
       setHwidDevices(result.devices);
       setHwidTotal(result.total);
@@ -181,10 +197,10 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   };
 
   const handleDeleteHwidDevice = async (hwid: string) => {
-    if (!hwidUserUuid) return;
+    if (!remnaUserUuid) return;
     setHwidDeleting(true);
     try {
-      const result = await remnaApi.deleteHwidDevice(hwidUserUuid, hwid);
+      const result = await remnaApi.deleteHwidDevice(remnaUserUuid, hwid);
       setHwidDevices(result.devices);
       setHwidTotal(result.total);
       setHwidDeleteConfirm(null);
@@ -749,7 +765,9 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
           color="indigo"
           variant="light"
           leftSection={<IconDevices size={16} />}
-          onClick={fetchHwidDevices}
+          rightSection={hwidTotal > 0 ? <Badge size="xs" color="indigo" variant="filled" circle>{hwidTotal}</Badge> : undefined}
+          onClick={() => fetchHwidDevices()}
+          loading={hwidLoading && !hwidModalOpen}
           mt="md"
           fullWidth
         >
@@ -796,7 +814,12 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
       <Modal
         opened={hwidModalOpen}
         onClose={() => { setHwidModalOpen(false); setHwidDeleteConfirm(null); }}
-        title={t('services.hwidDevices', 'Список устройств')}
+        title={
+          <Group gap="xs">
+            <Text fw={600}>{t('services.hwidDevices', 'Список устройств')}</Text>
+            {hwidTotal > 0 && <Badge size="sm" color="indigo" variant="light">{hwidTotal}</Badge>}
+          </Group>
+        }
         centered
       >
         {hwidLoading ? (
@@ -805,23 +828,29 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
             <Text size="sm">{t('common.loading')}</Text>
           </Group>
         ) : hwidError ? (
-          <Text c="red" size="sm">{hwidError}</Text>
+          <Stack gap="sm">
+            <Text c="red" size="sm">{hwidError}</Text>
+            <Button size="xs" variant="light" leftSection={<IconRefresh size={14} />} onClick={() => fetchHwidDevices(true)}>
+              {t('common.refresh')}
+            </Button>
+          </Stack>
         ) : (
           <Stack gap="xs">
-            <Group justify="space-between">
-              <Text size="sm" c="dimmed">{t('services.hwidTotal', 'Всего устройств')}:</Text>
-              <Text size="sm">{hwidTotal}</Text>
-            </Group>
-            <Divider my="xs" />
             {hwidDevices.length === 0 ? (
-              <Text size="sm" c="dimmed">{t('services.hwidNoDevices', 'Устройств нет')}</Text>
+              <Text size="sm" c="dimmed" ta="center" py="md">{t('services.hwidNoDevices', 'Устройств нет')}</Text>
             ) : (
               hwidDevices.map((d) => (
                 <Paper key={d.hwid} withBorder p="sm" radius="md">
                   <Group justify="space-between" wrap="nowrap">
                     <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                      <Text size="sm" fw={500}>{d.platform || 'N/A'}</Text>
-                      <Text size="xs" c="dimmed" style={{ wordBreak: 'break-all' }}>{d.userAgent || 'N/A'}</Text>
+                      <Group gap="xs">
+                        <Text size="sm" fw={500}>{d.platform || 'Unknown'}</Text>
+                        {d.osVersion && <Text size="xs" c="dimmed">{d.osVersion}</Text>}
+                      </Group>
+                      {d.deviceModel && <Text size="xs" c="dimmed">{d.deviceModel}</Text>}
+                      {d.userAgent && (
+                        <Text size="xs" c="dimmed" style={{ wordBreak: 'break-all' }} lineClamp={2}>{d.userAgent}</Text>
+                      )}
                       <Text size="xs" c="dimmed">{t('services.hwidUpdated', 'Обновлено')}: {new Date(d.updatedAt).toLocaleString()}</Text>
                     </Stack>
                     {hwidDeleteConfirm === d.hwid ? (
@@ -842,6 +871,17 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
                 </Paper>
               ))
             )}
+            <Button
+              size="xs"
+              variant="subtle"
+              color="gray"
+              leftSection={<IconRefresh size={14} />}
+              onClick={() => fetchHwidDevices(true)}
+              loading={hwidLoading}
+              mt="xs"
+            >
+              {t('common.refresh')}
+            </Button>
           </Stack>
         )}
       </Modal>

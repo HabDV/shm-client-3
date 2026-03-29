@@ -312,21 +312,60 @@ export interface RemnaHwidDevicesResponse {
   devices: RemnaHwidDevice[];
 }
 
+// Структура ошибки Remnawave API (400/404/500)
+interface RemnaApiError {
+  message?: string;
+  statusCode?: number;
+  errors?: Array<{ message: string; path: string[]; code: string; validation: string }>;
+  timestamp?: string;
+  path?: string;
+  errorCode?: string;
+}
+
+// UUID v4 regex для валидации перед запросом
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function assertUuid(value: string, label = 'UUID'): void {
+  if (!UUID_REGEX.test(value)) {
+    throw new Error(`Invalid ${label}: "${value}"`);
+  }
+}
+
+// Извлекает читаемое сообщение из тела ошибки Remnawave
+function extractRemnaErrorMessage(body: RemnaApiError, status: number): string {
+  if (body.errors?.length) {
+    return body.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; ');
+  }
+  if (body.message) return body.message;
+  if (body.errorCode) return body.errorCode;
+  return `Remnawave API error: ${status}`;
+}
+
 // Общий хелпер для запросов к Remnawave через nginx-прокси /remna-api/
+// Авторизация (Bearer token + X-Api-Key) добавляется nginx на уровне proxy_set_header
 async function remnaFetch(path: string, options?: RequestInit): Promise<unknown> {
   const response = await fetch(`/remna-api/${path}`, {
     credentials: 'include',
     ...options,
   });
+
   if (!response.ok) {
-    throw new Error(`Remnawave API error: ${response.status}`);
+    let body: RemnaApiError = {};
+    try {
+      body = await response.json() as RemnaApiError;
+    } catch {
+      // тело не JSON — используем статус
+    }
+    throw new Error(extractRemnaErrorMessage(body, response.status));
   }
+
   return response.json();
 }
 
 export const remnaApi = {
   // GET /api/subscriptions/by-uuid/{uuid}
   getSubscriptionByUuid: async (uuid: string): Promise<RemnaTrafficStats> => {
+    assertUuid(uuid, 'subscription UUID');
     const data = await remnaFetch(`subscriptions/by-uuid/${uuid}`) as { response: { isFound: boolean; user: RemnaTrafficStats } };
     if (!data?.response?.isFound) {
       throw new Error('Subscription not found');
@@ -335,18 +374,33 @@ export const remnaApi = {
   },
 
   // GET /api/hwid/devices/{userUuid}
+  // Возвращает список устройств пользователя по его UUID из Remnawave
   getHwidDevices: async (userUuid: string): Promise<RemnaHwidDevicesResponse> => {
+    assertUuid(userUuid, 'userUuid');
     const data = await remnaFetch(`hwid/devices/${userUuid}`) as { response: RemnaHwidDevicesResponse };
-    return data.response;
+    const resp = data?.response;
+    if (!resp || typeof resp.total !== 'number' || !Array.isArray(resp.devices)) {
+      throw new Error('Unexpected response shape from hwid/devices');
+    }
+    return resp;
   },
 
   // POST /api/hwid/devices/delete  { userUuid, hwid }
+  // После удаления API возвращает обновлённый список — используем его напрямую
   deleteHwidDevice: async (userUuid: string, hwid: string): Promise<RemnaHwidDevicesResponse> => {
+    assertUuid(userUuid, 'userUuid');
+    if (!hwid || typeof hwid !== 'string' || hwid.trim() === '') {
+      throw new Error('Invalid hwid: must be a non-empty string');
+    }
     const data = await remnaFetch(`hwid/devices/delete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userUuid, hwid }),
     }) as { response: RemnaHwidDevicesResponse };
-    return data.response;
+    const resp = data?.response;
+    if (!resp || typeof resp.total !== 'number' || !Array.isArray(resp.devices)) {
+      throw new Error('Unexpected response shape from hwid/devices/delete');
+    }
+    return resp;
   },
 };
