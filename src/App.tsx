@@ -18,6 +18,7 @@ import { useEmailRequired } from './hooks/useEmailRequired';
 import PayHistoryModal from './components/PayHistoryModal';
 import WithdrawHistoryModal from './components/WithdrawHistoryModal';
 import NeuralBackground from './components/NeuralBackground';
+import PWAPrompt from './components/PWAPrompt';
 
 parseAndSaveSessionId();
 parseAndSavePartnerId();
@@ -578,6 +579,7 @@ function App() {
       <BrowserRouter basename={basePath}>
         <AppContent />
       </BrowserRouter>
+      <PWAPrompt />
     </MantineProvider>
   );
 }

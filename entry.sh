@@ -45,22 +45,46 @@ cat > "/app/manifest.json" << MANIFEST
   "short_name": "${MANIFEST_SHORT}",
   "description": "${MANIFEST_DESC}",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#228be6",
   "orientation": "portrait-primary",
+  "lang": "ru",
+  "categories": ["utilities", "finance"],
   "icons": [
     {
       "src": "${MANIFEST_ICON}",
       "sizes": "192x192",
       "type": "image/jpeg",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "${MANIFEST_ICON}",
       "sizes": "512x512",
       "type": "image/jpeg",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "${MANIFEST_ICON}",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Услуги",
+      "short_name": "Услуги",
+      "url": "./",
+      "icons": [{ "src": "${MANIFEST_ICON}", "sizes": "96x96" }]
+    },
+    {
+      "name": "Профиль",
+      "short_name": "Профиль",
+      "url": "./profile",
+      "icons": [{ "src": "${MANIFEST_ICON}", "sizes": "96x96" }]
     }
   ]
 }

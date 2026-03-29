@@ -431,5 +431,13 @@
   },
   "security": {
     "changePasswordDescription": "Измените пароль для входа в личный кабинет"
+  },
+  "pwa": {
+    "installTitle": "Установить приложение",
+    "installDescription": "Добавьте на главный экран для удобного доступа",
+    "installButton": "Установить",
+    "updateTitle": "Доступно обновление",
+    "updateDescription": "Новая версия готова. Перезагрузите страницу.",
+    "updateButton": "Обновить"
   }
 }

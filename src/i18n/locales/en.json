@@ -431,5 +431,13 @@
   },
   "security": {
     "changePasswordDescription": "Change your password for logging into your account"
+  },
+  "pwa": {
+    "installTitle": "Install App",
+    "installDescription": "Add to home screen for a better experience",
+    "installButton": "Install",
+    "updateTitle": "Update available",
+    "updateDescription": "A new version is ready. Reload to apply.",
+    "updateButton": "Reload"
   }
 }
