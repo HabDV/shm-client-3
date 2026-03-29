@@ -789,23 +789,6 @@ export default function Login() {
       )}
 
       {config.SUPPORT_LINK && (
-        <Button
-          onClick={handleSupportLink}
-          style={{
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            zIndex: 200,
-          }}
-          leftSection={<IconHeadset size={20} />}
-          radius="xl"
-          size="md"
-          visibleFrom="xs"
-        >
-          {t('common.support')}
-        </Button>
-      )}
-      {config.SUPPORT_LINK && (
         <ActionIcon
           onClick={handleSupportLink}
           style={{
@@ -816,7 +799,6 @@ export default function Login() {
           }}
           radius="xl"
           size="xl"
-          hiddenFrom="xs"
           aria-label={t('common.support')}
         >
           <IconHeadset size={20} />
