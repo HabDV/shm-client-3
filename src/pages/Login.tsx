@@ -589,6 +589,21 @@ export default function Login() {
                   >
                     {mode === 'login' ? t('auth.login') : t('auth.register')}
                   </Button>
+                  {mode === 'register' && config.TERMS_URL && (
+                    <Text size="xs" c="dimmed" ta="center">
+                      {t('auth.termsText')}{' '}
+                      <Text
+                        component="a"
+                        href={config.TERMS_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        c="blue"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {t('auth.termsLink')}
+                      </Text>
+                    </Text>
+                  )}
                   {mode === 'login' && isWebAuthnSupported && hasTelegramWidget && config.PASSKEY_AUTH_DISABLED === 'false' && (
                     <Button
                       variant="light"

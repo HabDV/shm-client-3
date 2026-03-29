@@ -40,6 +40,8 @@
     "confirmPasswordPlaceholder": "Repeat password",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
+    "termsText": "By registering, you agree to the",
+    "termsLink": "terms of service",
     "loginLabel": "Login",
     "passwordLabel": "Password",
     "emailLabel": "Email",

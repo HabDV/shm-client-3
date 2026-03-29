@@ -40,6 +40,8 @@
     "confirmPasswordPlaceholder": "Повторите пароль",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",
+    "termsText": "Регистрируясь, вы соглашаетесь с",
+    "termsLink": "правилами использования",
     "loginLabel": "Логин",
     "passwordLabel": "Пароль",
     "emailLabel": "Email",
