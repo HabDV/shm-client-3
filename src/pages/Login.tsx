@@ -450,8 +450,18 @@ export default function Login() {
   };
 
   return (
-    <Center h="80vh" style={{ position: 'relative' }}>
-      <Card withBorder radius="md" p="xl" w={400}>
+    <Center
+      mih="100dvh"
+      style={{ position: 'relative', alignItems: 'flex-start', paddingTop: '5vh', paddingBottom: '5vh' }}
+      px={{ base: 'md', sm: 0 }}
+    >
+      <Card
+        withBorder
+        radius="md"
+        p={{ base: 'md', sm: 'xl' }}
+        w={{ base: '100%', sm: 400 }}
+        maw={400}
+      >
         <Stack gap="lg">
           <Group justify="space-between" align="center">
             <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
@@ -783,16 +793,34 @@ export default function Login() {
           onClick={handleSupportLink}
           style={{
             position: 'fixed',
-            bottom: 24,
-            right: 24,
+            bottom: 16,
+            right: 16,
             zIndex: 200,
           }}
           leftSection={<IconHeadset size={20} />}
           radius="xl"
           size="md"
+          visibleFrom="xs"
         >
           {t('common.support')}
         </Button>
+      )}
+      {config.SUPPORT_LINK && (
+        <ActionIcon
+          onClick={handleSupportLink}
+          style={{
+            position: 'fixed',
+            bottom: 16,
+            right: 16,
+            zIndex: 200,
+          }}
+          radius="xl"
+          size="xl"
+          hiddenFrom="xs"
+          aria-label={t('common.support')}
+        >
+          <IconHeadset size={20} />
+        </ActionIcon>
       )}
     </Center>
   );
