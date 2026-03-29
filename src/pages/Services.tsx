@@ -125,7 +125,7 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
     setTrafficModalOpen(true);
     try {
       // UUID хранится в storage vpn_remna_{usi} в поле response.uuid или settings.remna.uuid
-      const storageResp = await api.get(`/storage/manage/vpn_remna_${service.user_service_id}?format=json`);
+      const storageResp = await api.get(`/storage/manage/vpn_mrzb_${service.user_service_id}?format=json`);
       const uuid: string | undefined =
         storageResp.data?.response?.uuid ||
         storageResp.data?.uuid ||
