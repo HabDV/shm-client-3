@@ -64,13 +64,19 @@ export function encodeInvite(partnerId: string | number): string {
   return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// Validates that a partner ID contains only digits (1–20 chars)
+function isValidPartnerId(pid: string): boolean {
+  return /^\d{1,20}$/.test(pid);
+}
+
 export function decodeInvite(encoded: string): string | null {
+  if (!encoded || encoded.length > 512) return null;
   try {
     const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
     const padding = '='.repeat((4 - (base64.length % 4)) % 4);
     const json = atob(base64 + padding);
     const obj = JSON.parse(json);
-    if (obj && typeof obj.pid === 'string' && obj.pid) {
+    if (obj && typeof obj.pid === 'string' && isValidPartnerId(obj.pid)) {
       return obj.pid;
     }
     return null;
@@ -84,8 +90,8 @@ export function parseAndSavePartnerId(): void {
 
   // New format: ?invite=<base64url>
   const invite = urlParams.get('invite');
-  if (invite) {
-    const partnerId = decodeInvite(invite);
+  if (invite && invite.trim()) {
+    const partnerId = decodeInvite(invite.trim());
     if (partnerId) {
       setPartnerCookie(partnerId);
     }
@@ -97,8 +103,8 @@ export function parseAndSavePartnerId(): void {
 
   // Legacy format: ?partner_id=<id> (backward compatibility)
   const partnerId = urlParams.get('partner_id');
-  if (partnerId) {
-    setPartnerCookie(partnerId);
+  if (partnerId && isValidPartnerId(partnerId.trim())) {
+    setPartnerCookie(partnerId.trim());
     urlParams.delete('partner_id');
     const newSearch = urlParams.toString();
     window.history.replaceState({}, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);

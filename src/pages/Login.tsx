@@ -5,7 +5,7 @@ import { IconLogin, IconUserPlus, IconHeadset, IconFingerprint, IconShieldLock, 
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { auth, passkeyApi, userApi } from '../api/client';
-import { setCookie, getResetTokenCookie, removeResetTokenCookie, parseAndSaveResetToken } from '../api/cookie';
+import { setCookie, getResetTokenCookie, removeResetTokenCookie, parseAndSaveResetToken, decodeInvite } from '../api/cookie';
 import { useStore } from '../store/useStore';
 import TelegramLoginButton, { TelegramUser } from '../components/TelegramLoginButton';
 import { config } from '../config';
@@ -63,8 +63,21 @@ export default function Login() {
     const params = new URLSearchParams(location.search);
     const partnerLink = params.get('partnerLink');
     if (partnerLink) {
-      setInviteCode(partnerLink);
-      setMode('register');
+      const trimmed = partnerLink.trim();
+      // partnerLink may be a full URL containing ?invite=<base64url> or just the token itself
+      let code = trimmed;
+      try {
+        const url = new URL(trimmed);
+        const inviteParam = url.searchParams.get('invite');
+        if (inviteParam) code = inviteParam.trim();
+      } catch {
+        // not a URL — use as-is (raw token)
+      }
+      // Only accept if it decodes to a valid partner id
+      if (decodeInvite(code) !== null) {
+        setInviteCode(code);
+        setMode('register');
+      }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [loading, setLoading] = useState(false);
@@ -276,6 +289,11 @@ export default function Login() {
 
     if (inviteCodeEnabled && inviteCodeRequired && !inviteCode.trim()) {
       notifications.show({ title: t('common.error'), message: t('auth.inviteCodeRequired'), color: 'red' });
+      return;
+    }
+
+    if (inviteCodeEnabled && inviteCode.trim() && decodeInvite(inviteCode.trim()) === null) {
+      notifications.show({ title: t('common.error'), message: t('auth.inviteCodeInvalid'), color: 'red' });
       return;
     }
 
