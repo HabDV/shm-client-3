@@ -426,26 +426,32 @@ export default function Profile() {
 
             <Divider my="md" />
 
-            <Group justify="space-between" align="flex-start">
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <Text size="sm" style={{ wordBreak: 'break-all' }}>{partnerLink}
-                  <Tooltip label={clipboard.copied ? t('common.copied') : t('common.copy')}>
-                    <ActionIcon color={clipboard.copied ? 'teal' : 'gray'} variant="subtle" onClick={() => clipboard.copy(partnerLink)}>
-                      {clipboard.copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                    </ActionIcon>
-                  </Tooltip>
-                </Text>
-                <Text size="xs" c="dimmed">{t('profile.partnerLinkDescription')}</Text>
-              </div>
-              <Stack gap={2} align="flex-end" style={{ flexShrink: 0 }}>
-                {(profile.income_percent ?? 0) > 0 && (
-                  <Text size="sm" fw={600} c="green">{profile.income_percent}%</Text>
+            {profile.gid === 0 && (
+              <Group justify="space-between" align="flex-start">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Text size="sm" style={{ wordBreak: 'break-all' }}>{partnerLink}
+                    <Tooltip label={clipboard.copied ? t('common.copied') : t('common.copy')}>
+                      <ActionIcon color={clipboard.copied ? 'teal' : 'gray'} variant="subtle" onClick={() => clipboard.copy(partnerLink)}>
+                        {clipboard.copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                      </ActionIcon>
+                    </Tooltip>
+                  </Text>
+                  <Text size="xs" c="dimmed">{t('profile.partnerLinkDescription')}</Text>
+                </div>
+                {(profile.income_percent != null || profile.referrals_count != null) && (
+                  <Stack gap={2} align="flex-end" style={{ flexShrink: 0 }}>
+                    {(profile.income_percent ?? 0) > 0 && (
+                      <Text size="sm" fw={600} c="green">{profile.income_percent}%</Text>
+                    )}
+                    {profile.referrals_count != null && (
+                      <Text size="xs" c="dimmed">{t('profile.referralsCount')}: {profile.referrals_count}</Text>
+                    )}
+                  </Stack>
                 )}
-                <Text size="xs" c="dimmed">{t('profile.referralsCount')}: {profile.referrals_count ?? 0}</Text>
-              </Stack>
-            </Group>
+              </Group>
+            )}
 
-            <Divider my="md" />
+            {profile.gid === 0 && <Divider my="md" />}
 
             <Group justify="space-between" align="center">
               <div>
