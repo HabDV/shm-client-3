@@ -17,6 +17,7 @@ import { hasTelegramWebAppAutoAuth, isTelegramWebApp } from './constants/webapp'
 import { useEmailRequired } from './hooks/useEmailRequired';
 import PayHistoryModal from './components/PayHistoryModal';
 import WithdrawHistoryModal from './components/WithdrawHistoryModal';
+import NeuralBackground from './components/NeuralBackground';
 
 parseAndSaveSessionId();
 parseAndSavePartnerId();
@@ -573,6 +574,7 @@ function App() {
   return (
     <MantineProvider theme={theme} defaultColorScheme="auto">
       <Notifications position="top-right" />
+      {config.NEURAL_BG !== 'false' && <NeuralBackground />}
       <BrowserRouter basename={basePath}>
         <AppContent />
       </BrowserRouter>

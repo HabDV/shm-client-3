@@ -11,7 +11,6 @@ import TelegramLoginButton, { TelegramUser } from '../components/TelegramLoginBu
 import { config } from '../config';
 import { useTelegramWebApp } from '../hooks/useTelegramWebApp';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import NeuralBackground from '../components/NeuralBackground';
 import { hasTelegramWebAppAutoAuth, hasTelegramWidget, hasTelegramWebAppAuth } from '../constants/webapp';
 
 function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
@@ -456,7 +455,6 @@ export default function Login() {
       style={{ position: 'relative', alignItems: 'flex-start', paddingTop: '5vh', paddingBottom: '5vh' }}
       px={{ base: 'md', sm: 0 }}
     >
-      <NeuralBackground />
       <Card
         withBorder
         radius="md"

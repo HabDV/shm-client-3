@@ -15,42 +15,41 @@ const NODE_COUNT = 55;
 const CONNECTION_DIST = 160;
 const SPEED = 0.3;
 
-// Dark theme: bright teal/cyan on dark bg
-const DARK = {
-  nodeFill:       (a: number) => `rgba(80,220,200,${a})`,
-  nodeGlow0:      (a: number) => `rgba(80,220,200,${a})`,
-  nodeGlow1:                    `rgba(40,140,220,0)`,
-  lineR: (p: number) => Math.round(40  + p * 60),
-  lineG: (p: number) => Math.round(180 - p * 60),
-  lineB:                        220,
-  lineAlphaScale:               0.30,
+// Light theme: dark navy/indigo nodes on white bg
+const LIGHT = {
+  lineR: (p: number) => Math.round(30  + p * 40),
+  lineG: (p: number) => Math.round(40  + p * 30),
+  lineB:                        160,
+  lineAlpha:                    0.18,
+  nodeCore:       (a: number) => `rgba(25,40,140,${a})`,
+  nodeGlowInner:  (a: number) => `rgba(40,60,180,${a})`,
+  nodeGlowOuter:                `rgba(20,30,120,0)`,
   nodeBaseAlpha:                0.55,
-  nodeGlowScale:                0.40,
-  canvasOpacity:                0.75,
+  nodeGlowScale:                0.30,
+  canvasOpacity:                0.45,
 };
 
-// Light theme: deep indigo/violet on white bg — visible but subtle
-const LIGHT = {
-  nodeFill:       (a: number) => `rgba(80,60,200,${a})`,
-  nodeGlow0:      (a: number) => `rgba(100,80,220,${a})`,
-  nodeGlow1:                    `rgba(60,40,180,0)`,
-  lineR: (p: number) => Math.round(80  + p * 40),
-  lineG: (p: number) => Math.round(60  + p * 20),
-  lineB:                        200,
-  lineAlphaScale:               0.22,
-  nodeBaseAlpha:                0.45,
-  nodeGlowScale:                0.30,
-  canvasOpacity:                0.55,
+// Dark theme: bright light-blue/cyan nodes on dark bg
+const DARK = {
+  lineR: (p: number) => Math.round(60  + p * 80),
+  lineG: (p: number) => Math.round(160 + p * 40),
+  lineB:                        240,
+  lineAlpha:                    0.28,
+  nodeCore:       (a: number) => `rgba(140,210,255,${a})`,
+  nodeGlowInner:  (a: number) => `rgba(100,180,255,${a})`,
+  nodeGlowOuter:                `rgba(60,140,240,0)`,
+  nodeBaseAlpha:                0.60,
+  nodeGlowScale:                0.35,
+  canvasOpacity:                0.70,
 };
 
 export default function NeuralBackground() {
-  const canvasRef      = useRef<HTMLCanvasElement>(null);
-  const animRef        = useRef<number>(0);
-  const nodesRef       = useRef<Node[]>([]);
-  const colorScheme    = useComputedColorScheme('light');
-  // keep a ref so draw() always reads the latest value without restarting
-  const schemeRef      = useRef(colorScheme);
-  schemeRef.current    = colorScheme;
+  const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const animRef     = useRef<number>(0);
+  const nodesRef    = useRef<Node[]>([]);
+  const colorScheme = useComputedColorScheme('light');
+  const schemeRef   = useRef(colorScheme);
+  schemeRef.current = colorScheme;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -83,7 +82,6 @@ export default function NeuralBackground() {
 
       ctx.clearRect(0, 0, w, h);
 
-      // update positions
       for (const n of nodes) {
         n.x     += n.vx;
         n.y     += n.vy;
@@ -99,16 +97,13 @@ export default function NeuralBackground() {
           const dy   = nodes[i].y - nodes[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < CONNECTION_DIST) {
-            const fade     = 1 - dist / CONNECTION_DIST;
-            const alpha    = fade * theme.lineAlphaScale;
-            const progress = (nodes[i].x + nodes[j].x) / (2 * w);
-            const r        = theme.lineR(progress);
-            const g        = theme.lineG(progress);
-            const b        = theme.lineB;
+            const fade  = 1 - dist / CONNECTION_DIST;
+            const alpha = fade * theme.lineAlpha;
+            const p     = (nodes[i].x + nodes[j].x) / (2 * w);
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+            ctx.strokeStyle = `rgba(${theme.lineR(p)},${theme.lineG(p)},${theme.lineB},${alpha})`;
             ctx.lineWidth   = 0.8;
             ctx.stroke();
           }
@@ -121,19 +116,17 @@ export default function NeuralBackground() {
         const alpha = theme.nodeBaseAlpha + glow * theme.nodeGlowScale;
         const r     = n.radius + glow * 1.2;
 
-        // outer glow
-        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 3);
-        grad.addColorStop(0, theme.nodeGlow0(alpha * 0.8));
-        grad.addColorStop(1, theme.nodeGlow1);
+        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 3.5);
+        grad.addColorStop(0, theme.nodeGlowInner(alpha * 0.7));
+        grad.addColorStop(1, theme.nodeGlowOuter);
         ctx.beginPath();
-        ctx.arc(n.x, n.y, r * 3, 0, Math.PI * 2);
+        ctx.arc(n.x, n.y, r * 3.5, 0, Math.PI * 2);
         ctx.fillStyle = grad;
         ctx.fill();
 
-        // core dot
         ctx.beginPath();
         ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = theme.nodeFill(alpha);
+        ctx.fillStyle = theme.nodeCore(alpha);
         ctx.fill();
       }
 
@@ -146,7 +139,7 @@ export default function NeuralBackground() {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, []); // runs once — schemeRef keeps theme in sync
+  }, []);
 
   return (
     <canvas

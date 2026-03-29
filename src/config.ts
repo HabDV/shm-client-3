@@ -62,6 +62,7 @@ interface AppConfig {
   CAPTCHA_ENABLED: string;
   ORDER_SORTING: string;
   TERMS_URL: string;
+  NEURAL_BG: string;
 }
 
 declare global {
@@ -137,6 +138,7 @@ function getConfig(): AppConfig {
     ANDROID_PROXY_URL_SCHEMA: runtimeConfig?.ANDROID_PROXY_URL_SCHEMA || import.meta.env.VITE_ANDROID_PROXY_URL_SCHEMA || '',
     CAPTCHA_ENABLED: runtimeConfig?.CAPTCHA_ENABLED || import.meta.env.VITE_CAPTCHA_ENABLED || 'false',
     TERMS_URL: runtimeConfig?.TERMS_URL || import.meta.env.VITE_TERMS_URL || '',
+    NEURAL_BG: runtimeConfig?.NEURAL_BG || import.meta.env.VITE_NEURAL_BG || 'true',
   };
 }
 
