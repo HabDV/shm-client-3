@@ -97,7 +97,7 @@ window.__APP_CONFIG__ = {
   CAPTCHA_ENABLED: "${CAPTCHA_ENABLED:-false}",
   ORDER_SORTING: "${ORDER_SORTING:-cost_asc}",
   TERMS_URL: "${TERMS_URL:-}",
-  NEURAL_BG: "${NEURAL_BG:-true}"
+  NEURAL_BG: "${NEURAL_BG:-false}"
 };
 EOF
 

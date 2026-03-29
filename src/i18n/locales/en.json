@@ -161,6 +161,8 @@
     "telegramDescription": "Linking Telegram will allow you to receive notifications about the status of services and payments, as well as pay for Telegram services with stars.",
     "partnerLink": "Partner link",
     "partnerLinkDescription": "Invite friends and receive bonuses for their orders and payments.",
+    "referralsCount": "Referrals",
+    "incomePercent": "Referral income percent",
     "payHistory": "Payment history",
     "wdHistory": "Withdrawal history"
   },
