@@ -228,7 +228,14 @@
     "profit": "Ваша выгода {{amount}} ₽ с учётом скидки и бонусов",
     "emailNotVerifiedtitle": "Не удалось подтвердить email",
     "emailNotVerifiedDesc": "Для заказа услуги необходимо подтвердить email.",
-    "emailNotVerifiedAction": "Подтвердить email"
+    "emailNotVerifiedAction": "Подтвердить email",
+    "hwidDevices": "Список устройств",
+    "hwidTotal": "Всего устройств",
+    "hwidNoDevices": "Устройств нет",
+    "hwidUpdated": "Обновлено",
+    "hwidDeviceDeleted": "Устройство удалено",
+    "hwidDeviceDeleteError": "Не удалось удалить устройство",
+    "hwidFetchError": "Ошибка получения списка устройств"
   },
   "categories": {
     "vpn": "VPN",

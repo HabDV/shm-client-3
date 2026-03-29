@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Timeline, Text, Stack, Group, Badge, Button, Divider, Modal, ActionIcon, Loader, Center, Paper, Title, Tabs, Code, Tooltip, Accordion, Box, Select, NumberInput, Pagination } from '@mantine/core';
-import { IconQrcode, IconCopy, IconCheck, IconDownload, IconRefresh, IconTrash, IconPlus, IconPlayerStop, IconExchange, IconCreditCard, IconWallet, IconDeviceMobileCog, IconChartBar } from '@tabler/icons-react';
+import { IconQrcode, IconCopy, IconCheck, IconDownload, IconRefresh, IconTrash, IconPlus, IconPlayerStop, IconExchange, IconCreditCard, IconWallet, IconDeviceMobileCog, IconChartBar, IconDevices } from '@tabler/icons-react';
 import { useDisclosure, useClipboard } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { api, servicesApi, userApi, remnaApi, RemnaTrafficStats } from '../api/client';
+import { api, servicesApi, userApi, remnaApi, RemnaTrafficStats, RemnaHwidDevice } from '../api/client';
 import { notifications } from '@mantine/notifications';
 import QrModal from '../components/QrModal';
 import OrderServiceModal from '../components/OrderServiceModal';
@@ -119,6 +119,16 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   const [trafficError, setTrafficError] = useState<string | null>(null);
   const [trafficModalOpen, setTrafficModalOpen] = useState(false);
 
+  // Remnawave HWID devices
+  const [hwidDevices, setHwidDevices] = useState<RemnaHwidDevice[]>([]);
+  const [hwidTotal, setHwidTotal] = useState(0);
+  const [hwidLoading, setHwidLoading] = useState(false);
+  const [hwidError, setHwidError] = useState<string | null>(null);
+  const [hwidModalOpen, setHwidModalOpen] = useState(false);
+  const [hwidDeleteConfirm, setHwidDeleteConfirm] = useState<string | null>(null);
+  const [hwidDeleting, setHwidDeleting] = useState(false);
+  const [hwidUserUuid, setHwidUserUuid] = useState<string | null>(null);
+
   const fetchRemnaTraffic = async () => {
     setTrafficLoading(true);
     setTrafficError(null);
@@ -141,6 +151,49 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
       setTrafficError(msg || t('services.remnaFetchError', 'Ошибка получения статистики'));
     } finally {
       setTrafficLoading(false);
+    }
+  };
+
+  const fetchHwidDevices = async () => {
+    setHwidLoading(true);
+    setHwidError(null);
+    setHwidModalOpen(true);
+    try {
+      const storageResp = await api.get(`/storage/manage/vpn_mrzb_${service.user_service_id}?format=json`);
+      const uuid: string | undefined =
+        storageResp.data?.response?.uuid ||
+        storageResp.data?.uuid ||
+        storageResp.data?.settings?.remna?.uuid;
+      if (!uuid) {
+        setHwidError(t('services.remnaUuidNotFound', 'UUID подписки не найден в хранилище'));
+        return;
+      }
+      setHwidUserUuid(uuid);
+      const result = await remnaApi.getHwidDevices(uuid);
+      setHwidDevices(result.devices);
+      setHwidTotal(result.total);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setHwidError(msg || t('services.hwidFetchError', 'Ошибка получения списка устройств'));
+    } finally {
+      setHwidLoading(false);
+    }
+  };
+
+  const handleDeleteHwidDevice = async (hwid: string) => {
+    if (!hwidUserUuid) return;
+    setHwidDeleting(true);
+    try {
+      const result = await remnaApi.deleteHwidDevice(hwidUserUuid, hwid);
+      setHwidDevices(result.devices);
+      setHwidTotal(result.total);
+      setHwidDeleteConfirm(null);
+      notifications.show({ title: t('common.success'), message: t('services.hwidDeviceDeleted', 'Устройство удалено'), color: 'green' });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      notifications.show({ title: t('common.error'), message: msg || t('services.hwidDeviceDeleteError', 'Не удалось удалить устройство'), color: 'red' });
+    } finally {
+      setHwidDeleting(false);
     }
   };
 
@@ -691,6 +744,19 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
         </Button>
       )}
 
+      {isProxy && service.status === 'ACTIVE' && (
+        <Button
+          color="indigo"
+          variant="light"
+          leftSection={<IconDevices size={16} />}
+          onClick={fetchHwidDevices}
+          mt="md"
+          fullWidth
+        >
+          {t('services.hwidDevices', 'Список устройств')}
+        </Button>
+      )}
+
       <Modal
         opened={trafficModalOpen}
         onClose={() => setTrafficModalOpen(false)}
@@ -725,6 +791,59 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
             </Group>
           </Stack>
         ) : null}
+      </Modal>
+
+      <Modal
+        opened={hwidModalOpen}
+        onClose={() => { setHwidModalOpen(false); setHwidDeleteConfirm(null); }}
+        title={t('services.hwidDevices', 'Список устройств')}
+        centered
+      >
+        {hwidLoading ? (
+          <Group justify="center" py="xl">
+            <Loader size="sm" />
+            <Text size="sm">{t('common.loading')}</Text>
+          </Group>
+        ) : hwidError ? (
+          <Text c="red" size="sm">{hwidError}</Text>
+        ) : (
+          <Stack gap="xs">
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">{t('services.hwidTotal', 'Всего устройств')}:</Text>
+              <Text size="sm">{hwidTotal}</Text>
+            </Group>
+            <Divider my="xs" />
+            {hwidDevices.length === 0 ? (
+              <Text size="sm" c="dimmed">{t('services.hwidNoDevices', 'Устройств нет')}</Text>
+            ) : (
+              hwidDevices.map((d) => (
+                <Paper key={d.hwid} withBorder p="sm" radius="md">
+                  <Group justify="space-between" wrap="nowrap">
+                    <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                      <Text size="sm" fw={500}>{d.platform || 'N/A'}</Text>
+                      <Text size="xs" c="dimmed" style={{ wordBreak: 'break-all' }}>{d.userAgent || 'N/A'}</Text>
+                      <Text size="xs" c="dimmed">{t('services.hwidUpdated', 'Обновлено')}: {new Date(d.updatedAt).toLocaleString()}</Text>
+                    </Stack>
+                    {hwidDeleteConfirm === d.hwid ? (
+                      <Group gap="xs" wrap="nowrap">
+                        <Button size="xs" color="red" loading={hwidDeleting} onClick={() => handleDeleteHwidDevice(d.hwid)}>
+                          {t('common.confirm')}
+                        </Button>
+                        <Button size="xs" variant="subtle" onClick={() => setHwidDeleteConfirm(null)}>
+                          {t('common.cancel')}
+                        </Button>
+                      </Group>
+                    ) : (
+                      <ActionIcon color="red" variant="subtle" onClick={() => setHwidDeleteConfirm(d.hwid)}>
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    )}
+                  </Group>
+                </Paper>
+              ))
+            )}
+          </Stack>
+        )}
       </Modal>
 
       {canStop && (

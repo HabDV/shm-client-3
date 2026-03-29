@@ -228,7 +228,14 @@
     "profit": "Your profit is {{amount}} ₽ considering discount and bonuses",
     "emailNotVerifiedtitle": "Email not verified",
     "emailNotVerifiedDesc": "To order services, you need to verify your email address. Please verify your email to continue.",
-    "emailNotVerifiedAction": "Confirm email"
+    "emailNotVerifiedAction": "Confirm email",
+    "hwidDevices": "Device List",
+    "hwidTotal": "Total devices",
+    "hwidNoDevices": "No devices",
+    "hwidUpdated": "Updated",
+    "hwidDeviceDeleted": "Device deleted",
+    "hwidDeviceDeleteError": "Failed to delete device",
+    "hwidFetchError": "Failed to fetch device list"
   },
   "categories": {
     "vpn": "VPN",

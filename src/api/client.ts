@@ -296,20 +296,57 @@ export interface RemnaTrafficStats {
   expiresAt: string;
 }
 
+export interface RemnaHwidDevice {
+  hwid: string;
+  userUuid: string;
+  platform: string | null;
+  osVersion: string | null;
+  deviceModel: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RemnaHwidDevicesResponse {
+  total: number;
+  devices: RemnaHwidDevice[];
+}
+
+// Общий хелпер для запросов к Remnawave через nginx-прокси /remna-api/
+async function remnaFetch(path: string, options?: RequestInit): Promise<unknown> {
+  const response = await fetch(`/remna-api/${path}`, {
+    credentials: 'include',
+    ...options,
+  });
+  if (!response.ok) {
+    throw new Error(`Remnawave API error: ${response.status}`);
+  }
+  return response.json();
+}
+
 export const remnaApi = {
-  // UUID берётся из storage vpn_remna_{usi}, запрос идёт через nginx-прокси /remna-api/
+  // GET /api/subscriptions/by-uuid/{uuid}
   getSubscriptionByUuid: async (uuid: string): Promise<RemnaTrafficStats> => {
-    const response = await fetch(`/remna-api/subscriptions/by-uuid/${uuid}`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-    if (!response.ok) {
-      throw new Error(`Remnawave API error: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await remnaFetch(`subscriptions/by-uuid/${uuid}`) as { response: { isFound: boolean; user: RemnaTrafficStats } };
     if (!data?.response?.isFound) {
       throw new Error('Subscription not found');
     }
-    return data.response.user as RemnaTrafficStats;
+    return data.response.user;
+  },
+
+  // GET /api/hwid/devices/{userUuid}
+  getHwidDevices: async (userUuid: string): Promise<RemnaHwidDevicesResponse> => {
+    const data = await remnaFetch(`hwid/devices/${userUuid}`) as { response: RemnaHwidDevicesResponse };
+    return data.response;
+  },
+
+  // POST /api/hwid/devices/delete  { userUuid, hwid }
+  deleteHwidDevice: async (userUuid: string, hwid: string): Promise<RemnaHwidDevicesResponse> => {
+    const data = await remnaFetch(`hwid/devices/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userUuid, hwid }),
+    }) as { response: RemnaHwidDevicesResponse };
+    return data.response;
   },
 };
