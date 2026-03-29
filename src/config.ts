@@ -63,6 +63,8 @@ interface AppConfig {
   ORDER_SORTING: string;
   TERMS_URL: string;
   NEURAL_BG: string;
+  INVITE_CODE_ENABLED: string;
+  INVITE_CODE_REQUIRED: string;
 }
 
 declare global {
@@ -139,6 +141,8 @@ function getConfig(): AppConfig {
     CAPTCHA_ENABLED: runtimeConfig?.CAPTCHA_ENABLED || import.meta.env.VITE_CAPTCHA_ENABLED || 'false',
     TERMS_URL: runtimeConfig?.TERMS_URL || import.meta.env.VITE_TERMS_URL || '',
     NEURAL_BG: runtimeConfig?.NEURAL_BG || import.meta.env.VITE_NEURAL_BG || 'false',
+    INVITE_CODE_ENABLED: runtimeConfig?.INVITE_CODE_ENABLED || import.meta.env.VITE_INVITE_CODE_ENABLED || 'false',
+    INVITE_CODE_REQUIRED: runtimeConfig?.INVITE_CODE_REQUIRED || import.meta.env.VITE_INVITE_CODE_REQUIRED || 'false',
   };
 }
 

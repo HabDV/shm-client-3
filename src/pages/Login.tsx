@@ -57,10 +57,23 @@ export default function Login() {
       setMode('register');
     }
   }, [location.search]);
+  // Auto-fill invite code from partnerLink URL param
+  useEffect(() => {
+    if (!inviteCodeEnabled) return;
+    const params = new URLSearchParams(location.search);
+    const partnerLink = params.get('partnerLink');
+    if (partnerLink) {
+      setInviteCode(partnerLink);
+      setMode('register');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [loading, setLoading] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [loginOrEmail, setLoginOrEmail] = useState('');
   const requireEmailRegister = config.EMAIL_REQUIRED === 'true';
+  const inviteCodeEnabled = config.INVITE_CODE_ENABLED === 'true';
+  const inviteCodeRequired = config.INVITE_CODE_REQUIRED === 'true';
+  const [inviteCode, setInviteCode] = useState('');
   const [captcha, setCaptcha] = useState<{ question: string; token: string } | null>(null);
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [showOtp, setShowOtp] = useState(false);
@@ -261,6 +274,11 @@ export default function Login() {
       return;
     }
 
+    if (inviteCodeEnabled && inviteCodeRequired && !inviteCode.trim()) {
+      notifications.show({ title: t('common.error'), message: t('auth.inviteCodeRequired'), color: 'red' });
+      return;
+    }
+
     if (config.CAPTCHA_ENABLED === 'true' && (!captcha || !captchaAnswer.trim())) {
       notifications.show({ title: t('common.error'), message: t('auth.captchaRequired'), color: 'red' });
       return;
@@ -268,11 +286,12 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await auth.register(login, password, captcha?.token, captchaAnswer || undefined);
+      await auth.register(login, password, captcha?.token, captchaAnswer || undefined, inviteCode.trim() || undefined);
       notifications.show({ title: t('common.success'), message: t('auth.registerSuccess'), color: 'green' });
       setMode('login');
       form.setValues({ confirmPassword: '' });
       setCaptchaAnswer('');
+      setInviteCode('');
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { error?: string } } };
       const errMsg = axiosError.response?.data?.error || '';
@@ -280,6 +299,8 @@ export default function Login() {
         notifications.show({ title: t('common.error'), message: t('auth.captchaInvalid'), color: 'red' });
       } else if (errMsg === 'Captcha required') {
         notifications.show({ title: t('common.error'), message: t('auth.captchaRequired'), color: 'red' });
+      } else if (errMsg === 'Invalid invite code') {
+        notifications.show({ title: t('common.error'), message: t('auth.inviteCodeInvalid'), color: 'red' });
       } else {
         notifications.show({ title: t('common.error'), message: t('auth.registerError'), color: 'red' });
       }
@@ -565,6 +586,16 @@ export default function Login() {
                       autoComplete="new-password"
                       name="confirm-password"
                       {...form.getInputProps('confirmPassword')}
+                    />
+                  )}
+                  {mode === 'register' && inviteCodeEnabled && (
+                    <TextInput
+                      label={t('auth.inviteCodeLabel')}
+                      placeholder={t('auth.inviteCodePlaceholder')}
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value)}
+                      required={inviteCodeRequired}
+                      withAsterisk={inviteCodeRequired}
                     />
                   )}
                   {mode === 'register' && config.CAPTCHA_ENABLED === 'true' && (

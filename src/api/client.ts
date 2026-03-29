@@ -88,11 +88,14 @@ export const auth = {
     return response;
   },
 
-  register: async (username: string, password: string, captchaToken?: string, captchaAnswer?: string) => {
+  register: async (username: string, password: string, captchaToken?: string, captchaAnswer?: string, inviteCode?: string) => {
     const partnerId = getPartnerCookie();
     const data: Record<string, string> = { login: username, password };
     if (partnerId) {
       data.partner_id = partnerId;
+    }
+    if (inviteCode) {
+      data.invite_code = inviteCode;
     }
     if (captchaToken && captchaAnswer !== undefined) {
       data.captcha_token = captchaToken;
