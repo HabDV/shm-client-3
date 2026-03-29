@@ -5,6 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { useClipboard } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { userApi, telegramApi, userEmailApi } from '../api/client';
+import { encodeInvite } from '../api/cookie';
 import PayModal from '../components/PayModal';
 import PromoModal from '../components/PromoModal';
 import SecuritySettings from '../components/security/SecuritySettings';
@@ -98,7 +99,9 @@ export default function Profile() {
   const clipboard = useClipboard({ timeout: 1000 });
   const { t } = useTranslation();
   const basePath = config.SHM_BASE_PATH && config.SHM_BASE_PATH !== '/' ? config.SHM_BASE_PATH : '';
-  const partnerLink = `${window.location.origin}${basePath}?partner_id=${profile?.user_id || 0}`;
+  const partnerLink = profile?.user_id
+    ? `${window.location.origin}${basePath}?invite=${encodeInvite(profile.user_id)}`
+    : '';
 
   const updateCooldown = useCallback(() => {
     const lastSent = localStorage.getItem(RESEND_STORAGE_KEY);
