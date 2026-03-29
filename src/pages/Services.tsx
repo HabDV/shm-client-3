@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Timeline, Text, Stack, Group, Badge, Button, Divider, Modal, ActionIcon, Loader, Center, Paper, Title, Tabs, Code, Tooltip, Accordion, Box, Select, NumberInput, Pagination } from '@mantine/core';
-import { IconQrcode, IconCopy, IconCheck, IconDownload, IconRefresh, IconTrash, IconPlus, IconPlayerStop, IconExchange, IconCreditCard, IconWallet, IconDeviceMobileCog } from '@tabler/icons-react';
+import { IconQrcode, IconCopy, IconCheck, IconDownload, IconRefresh, IconTrash, IconPlus, IconPlayerStop, IconExchange, IconCreditCard, IconWallet, IconDeviceMobileCog, IconChartBar } from '@tabler/icons-react';
 import { useDisclosure, useClipboard } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { api, servicesApi, userApi } from '../api/client';
+import { api, servicesApi, userApi, remnaApi, RemnaTrafficStats } from '../api/client';
 import { notifications } from '@mantine/notifications';
 import QrModal from '../components/QrModal';
 import OrderServiceModal from '../components/OrderServiceModal';
@@ -112,6 +112,37 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   const [payAmount, setPayAmount] = useState<number | string>(0);
   const [paySystemsLoading, setPaySystemsLoading] = useState(false);
   const [paying, setPaying] = useState(false);
+
+  // Remnawave traffic stats
+  const [trafficStats, setTrafficStats] = useState<RemnaTrafficStats | null>(null);
+  const [trafficLoading, setTrafficLoading] = useState(false);
+  const [trafficError, setTrafficError] = useState<string | null>(null);
+  const [trafficModalOpen, setTrafficModalOpen] = useState(false);
+
+  const fetchRemnaTraffic = async () => {
+    setTrafficLoading(true);
+    setTrafficError(null);
+    setTrafficModalOpen(true);
+    try {
+      // UUID хранится в storage vpn_remna_{usi} в поле response.uuid или settings.remna.uuid
+      const storageResp = await api.get(`/storage/manage/vpn_remna_${service.user_service_id}?format=json`);
+      const uuid: string | undefined =
+        storageResp.data?.response?.uuid ||
+        storageResp.data?.uuid ||
+        storageResp.data?.settings?.remna?.uuid;
+      if (!uuid) {
+        setTrafficError(t('services.remnaUuidNotFound', 'UUID подписки не найден в хранилище'));
+        return;
+      }
+      const stats = await remnaApi.getSubscriptionByUuid(uuid);
+      setTrafficStats(stats);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setTrafficError(msg || t('services.remnaFetchError', 'Ошибка получения статистики'));
+    } finally {
+      setTrafficLoading(false);
+    }
+  };
 
   const downloadConfig = async () => {
     if (!storageData) return;
@@ -646,6 +677,55 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
           {t('services.changeService')}
         </Button>
       )}
+
+      {isProxy && service.status === 'ACTIVE' && (
+        <Button
+          color="teal"
+          variant="light"
+          leftSection={<IconChartBar size={16} />}
+          onClick={fetchRemnaTraffic}
+          mt="md"
+          fullWidth
+        >
+          {t('services.trafficStats', 'Статистика трафика')}
+        </Button>
+      )}
+
+      <Modal
+        opened={trafficModalOpen}
+        onClose={() => setTrafficModalOpen(false)}
+        title={t('services.trafficStats', 'Статистика трафика')}
+        centered
+      >
+        {trafficLoading ? (
+          <Group justify="center" py="xl">
+            <Loader size="sm" />
+            <Text size="sm">{t('common.loading')}</Text>
+          </Group>
+        ) : trafficError ? (
+          <Text c="red" size="sm">{trafficError}</Text>
+        ) : trafficStats ? (
+          <Stack gap="xs">
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">{t('services.trafficLimit', 'Лимит')}:</Text>
+              <Text size="sm">{trafficStats.trafficLimit === '0' ? t('services.trafficUnlimited', 'Безлимит') : trafficStats.trafficLimit}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">{t('services.trafficUsed', 'Использовано')}:</Text>
+              <Text size="sm">{trafficStats.trafficUsed}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">{t('services.trafficLifetime', 'Всего за всё время')}:</Text>
+              <Text size="sm">{trafficStats.lifetimeTrafficUsed}</Text>
+            </Group>
+            <Divider my="xs" />
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">{t('services.daysLeft', 'Осталось дней')}:</Text>
+              <Text size="sm">{trafficStats.daysLeft}</Text>
+            </Group>
+          </Stack>
+        ) : null}
+      </Modal>
 
       {canStop && (
         <Button

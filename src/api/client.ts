@@ -282,3 +282,34 @@ export const passwordAuthApi = {
   disable: () => api.delete('/user/password-auth'),
   enable: () => api.post('/user/password-auth'),
 };
+
+export interface RemnaTrafficStats {
+  trafficLimit: string;
+  trafficUsed: string;
+  lifetimeTrafficUsed: string;
+  trafficLimitBytes: string;
+  trafficUsedBytes: string;
+  lifetimeTrafficUsedBytes: string;
+  daysLeft: number;
+  isActive: boolean;
+  userStatus: string;
+  expiresAt: string;
+}
+
+export const remnaApi = {
+  // UUID берётся из storage vpn_remna_{usi}, запрос идёт через nginx-прокси /remna-api/
+  getSubscriptionByUuid: async (uuid: string): Promise<RemnaTrafficStats> => {
+    const response = await fetch(`/remna-api/subscriptions/by-uuid/${uuid}`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error(`Remnawave API error: ${response.status}`);
+    }
+    const data = await response.json();
+    if (!data?.response?.isFound) {
+      throw new Error('Subscription not found');
+    }
+    return data.response.user as RemnaTrafficStats;
+  },
+};

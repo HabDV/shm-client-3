@@ -11,6 +11,18 @@ if [ ! -z "$PROXY_URL" ]; then
     sed -i "s|#SHM_URL|$PROXY_URL|" /etc/nginx/conf.d/default.conf
 fi
 
+if [ ! -z "$REMNA_URL" ]; then
+    sed -i "s|#REMNA_URL|$REMNA_URL|" /etc/nginx/conf.d/default.conf
+else
+    sed -i "s|#REMNA_URL|http://localhost|" /etc/nginx/conf.d/default.conf
+fi
+
+if [ ! -z "$REMNA_API_TOKEN" ]; then
+    sed -i "s|#REMNA_API_TOKEN|Bearer $REMNA_API_TOKEN|" /etc/nginx/conf.d/default.conf
+else
+    sed -i "s|#REMNA_API_TOKEN||" /etc/nginx/conf.d/default.conf
+fi
+
 if [ ! -z "$SHM_BASE_PATH" ] && [ "$SHM_BASE_PATH" != "/" ]; then
     sed -i "s|#BASE_LOCATION|location $SHM_BASE_PATH/ {\n        alias /app/;\n        try_files \$uri \$uri/ /index.html;\n    }|" /etc/nginx/conf.d/default.conf
     sed -i "s|href=\"/\"|href=\"${SHM_BASE_PATH}/\"|" /app/index.html
@@ -100,7 +112,9 @@ window.__APP_CONFIG__ = {
   NEURAL_BG: "${NEURAL_BG:-false}",
   INVITE_CODE_ENABLED: "${INVITE_CODE_ENABLED:-false}",
   INVITE_CODE_REQUIRED: "${INVITE_CODE_REQUIRED:-false}",
-  PASSWORD_RESET_DISABLED: "${PASSWORD_RESET_DISABLED:-false}"
+  PASSWORD_RESET_DISABLED: "${PASSWORD_RESET_DISABLED:-false}",
+  REMNA_URL: "${REMNA_URL:-}",
+  REMNA_API_TOKEN: "${REMNA_API_TOKEN:-}"
 };
 EOF
 

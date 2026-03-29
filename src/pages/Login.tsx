@@ -615,19 +615,16 @@ export default function Login() {
                   )}
                   {mode === 'register' && inviteCodeEnabled && (
                     <TextInput
-                      label={t('auth.inviteCodeLabel')}
+                      label={
+                        inviteCodeRequired
+                          ? t('auth.inviteCodeLabel')
+                          : `${t('auth.inviteCodeLabel')} (${t('auth.inviteCodeOptionalHint')})`
+                      }
                       placeholder={t('auth.inviteCodePlaceholder')}
                       value={inviteCode}
                       onChange={(e) => setInviteCode(e.target.value)}
                       required={inviteCodeRequired}
                       withAsterisk={inviteCodeRequired}
-                      description={
-                        inviteCode.trim() && decodeInvite(inviteCode.trim()) === null
-                          ? t('auth.inviteCodeInvalid')
-                          : inviteCodeRequired
-                            ? t('auth.inviteCodeRequiredHint')
-                            : t('auth.inviteCodeOptionalHint')
-                      }
                       error={inviteCode.trim() && decodeInvite(inviteCode.trim()) === null ? t('auth.inviteCodeInvalid') : undefined}
                     />
                   )}
