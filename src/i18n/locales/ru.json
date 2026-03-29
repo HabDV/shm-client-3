@@ -54,6 +54,7 @@
     "captchaRequired": "Введите ответ на задачу",
     "captchaInvalid": "Неверный ответ на задачу",
     "captchaRefresh": "Новая задача",
+    "captchaLoadError": "Не удалось загрузить задачу, нажмите ↻",
     "confirmPasswordLabel": "Подтвердите пароль",
     "loginSuccess": "Вы вошли в систему",
     "loginError": "Неверный логин или пароль",

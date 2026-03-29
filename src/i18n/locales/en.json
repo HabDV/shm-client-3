@@ -54,6 +54,7 @@
     "captchaRequired": "Please answer the challenge",
     "captchaInvalid": "Wrong answer, please try again",
     "captchaRefresh": "New challenge",
+    "captchaLoadError": "Failed to load challenge, click ↻ to retry",
     "confirmPasswordLabel": "Confirm password",
     "loginSuccess": "You are now logged in",
     "loginError": "Invalid login or password",

@@ -118,13 +118,28 @@ export default function Login() {
   const autoAuthAttemptKey = 'tg_webapp_auto_auth_attempted';
   const autoAuthCooldownMs = 60 * 1000;
 
+  const [captchaLoading, setCaptchaLoading] = useState(false);
+  const [captchaError, setCaptchaError] = useState(false);
+
   const fetchCaptcha = async () => {
+    if (captchaLoading) return;
+    setCaptchaLoading(true);
+    setCaptchaError(false);
     try {
       const res = await auth.getCaptcha();
       const raw = res.data?.data;
-      setCaptcha(Array.isArray(raw) ? raw[0] : raw);
-      setCaptchaAnswer('');
-    } catch { /* silent */ }
+      const data = Array.isArray(raw) ? raw[0] : raw;
+      if (data?.question && data?.token) {
+        setCaptcha(data);
+        setCaptchaAnswer('');
+      } else {
+        setCaptchaError(true);
+      }
+    } catch {
+      setCaptchaError(true);
+    } finally {
+      setCaptchaLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -133,6 +148,7 @@ export default function Login() {
     } else {
       setCaptcha(null);
       setCaptchaAnswer('');
+      setCaptchaError(false);
     }
   }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -298,6 +314,8 @@ export default function Login() {
       setMode('login');
       form.setValues({ confirmPassword: '' });
       setCaptchaAnswer('');
+      setCaptcha(null);
+      setCaptchaError(false);
       setInviteCode('');
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { error?: string } } };
@@ -618,14 +636,30 @@ export default function Login() {
                       <TextInput
                         style={{ flex: 1 }}
                         label={t('auth.captchaLabel')}
-                        description={captcha ? `${captcha.question} = ?` : '…'}
+                        description={
+                          captchaError
+                            ? t('auth.captchaLoadError')
+                            : captchaLoading
+                              ? t('common.loading')
+                              : captcha
+                                ? `${captcha.question} = ?`
+                                : '…'
+                        }
+                        error={captchaError ? t('auth.captchaLoadError') : undefined}
                         placeholder={t('auth.captchaPlaceholder')}
                         value={captchaAnswer}
                         onChange={(e) => setCaptchaAnswer(e.target.value.replace(/\D/g, ''))}
-                        disabled={!captcha}
+                        disabled={!captcha || captchaLoading}
                       />
-                      <Button variant="subtle" size="compact-sm" px={8} onClick={fetchCaptcha} title={t('auth.captchaRefresh')}>
-                        ↻
+                      <Button
+                        variant="subtle"
+                        size="compact-sm"
+                        px={8}
+                        onClick={fetchCaptcha}
+                        loading={captchaLoading}
+                        title={t('auth.captchaRefresh')}
+                      >
+                        {!captchaLoading && '↻'}
                       </Button>
                     </Group>
                   )}
