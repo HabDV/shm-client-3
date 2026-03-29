@@ -69,6 +69,8 @@ interface AppConfig {
   REMNA_URL: string;
   REMNA_CADDY_API_KEY: string;
   REMNA_API_TOKEN: string;
+  REMNA_TRAFFIC_STATS_ENABLE: string;
+  REMNA_HWID_DEVICES_ENABLE: string;
 }
 
 declare global {
@@ -151,6 +153,8 @@ function getConfig(): AppConfig {
     REMNA_URL: runtimeConfig?.REMNA_URL || import.meta.env.VITE_REMNA_URL || '',
     REMNA_CADDY_API_KEY: runtimeConfig?.REMNA_CADDY_API_KEY || import.meta.env.VITE_REMNA_CADDY_API_KEY || '',
     REMNA_API_TOKEN: runtimeConfig?.REMNA_API_TOKEN || import.meta.env.VITE_REMNA_API_TOKEN || '',
+    REMNA_TRAFFIC_STATS_ENABLE: runtimeConfig?.REMNA_TRAFFIC_STATS_ENABLE || import.meta.env.VITE_REMNA_TRAFFIC_STATS_ENABLE || 'false',
+    REMNA_HWID_DEVICES_ENABLE: runtimeConfig?.REMNA_HWID_DEVICES_ENABLE || import.meta.env.VITE_REMNA_HWID_DEVICES_ENABLE || 'false',
   };
 }
 

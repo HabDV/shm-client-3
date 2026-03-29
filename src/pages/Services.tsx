@@ -127,14 +127,14 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   const [hwidModalOpen, setHwidModalOpen] = useState(false);
   const [hwidDeleteConfirm, setHwidDeleteConfirm] = useState<string | null>(null);
   const [hwidDeleting, setHwidDeleting] = useState(false);
-  // UUID кешируется после первого резолва — не делаем повторный запрос к storage
-  const [remnaUserUuid, setRemnaUserUuid] = useState<string | null>(null);
+  // UUID кешируется в ref после первого резолва — не вызывает лишних ре-рендеров
+  const remnaUserUuidRef = useRef<string | null>(null);
 
   // Единая функция резолва UUID из storage.
   // Возвращает закешированный UUID если уже известен.
   // Пробует: PROXY_STORAGE_PREFIX → vpn_mrzb_ → vpn_remna_
   const resolveRemnaUuid = async (): Promise<string> => {
-    if (remnaUserUuid) return remnaUserUuid;
+    if (remnaUserUuidRef.current) return remnaUserUuidRef.current;
 
     const prefix = config.PROXY_STORAGE_PREFIX || 'vpn_mrzb_';
     const usi = service.user_service_id;
@@ -152,7 +152,7 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
           resp.data?.uuid ||
           resp.data?.settings?.remna?.uuid;
         if (uuid) {
-          setRemnaUserUuid(uuid);
+          remnaUserUuidRef.current = uuid;
           return uuid;
         }
       } catch {
@@ -166,6 +166,7 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   const fetchRemnaTraffic = async () => {
     setTrafficLoading(true);
     setTrafficError(null);
+    setTrafficStats(null);
     setTrafficModalOpen(true);
     try {
       const uuid = await resolveRemnaUuid();
@@ -180,9 +181,9 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   };
 
   const fetchHwidDevices = async (silent = false) => {
-    if (!silent) setHwidModalOpen(true);
     setHwidLoading(true);
     setHwidError(null);
+    if (!silent) setHwidModalOpen(true);
     try {
       const uuid = await resolveRemnaUuid();
       const result = await remnaApi.getHwidDevices(uuid);
@@ -197,10 +198,10 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   };
 
   const handleDeleteHwidDevice = async (hwid: string) => {
-    if (!remnaUserUuid) return;
     setHwidDeleting(true);
     try {
-      const result = await remnaApi.deleteHwidDevice(remnaUserUuid, hwid);
+      const uuid = await resolveRemnaUuid();
+      const result = await remnaApi.deleteHwidDevice(uuid, hwid);
       setHwidDevices(result.devices);
       setHwidTotal(result.total);
       setHwidDeleteConfirm(null);
@@ -468,6 +469,8 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
   const isVpn = category === 'vpn';
   const isProxy = category === 'proxy';
   const isVpnOrProxy = isVpn || isProxy;
+  const showTrafficStats = isProxy && service.status === 'ACTIVE' && config.REMNA_TRAFFIC_STATS_ENABLE === 'true';
+  const showHwidDevices = isProxy && service.status === 'ACTIVE' && config.REMNA_HWID_DEVICES_ENABLE === 'true';
   const statusColor = statusColors[service.status] || 'gray';
   const statusLabel = t(`status.${service.status}`, service.status);
   const urlSchema = isProxy && config[`${detectPlatform()}_PROXY_URL_SCHEMA` as keyof typeof config];
@@ -747,7 +750,7 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
         </Button>
       )}
 
-      {isProxy && service.status === 'ACTIVE' && (
+      {showTrafficStats && (
         <Button
           color="teal"
           variant="light"
@@ -760,7 +763,7 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
         </Button>
       )}
 
-      {isProxy && service.status === 'ACTIVE' && (
+      {showHwidDevices && (
         <Button
           color="indigo"
           variant="light"
@@ -787,12 +790,17 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
             <Text size="sm">{t('common.loading')}</Text>
           </Group>
         ) : trafficError ? (
-          <Text c="red" size="sm">{trafficError}</Text>
+          <Stack gap="sm">
+            <Text c="red" size="sm">{trafficError}</Text>
+            <Button size="xs" variant="light" leftSection={<IconRefresh size={14} />} onClick={fetchRemnaTraffic}>
+              {t('common.refresh')}
+            </Button>
+          </Stack>
         ) : trafficStats ? (
           <Stack gap="xs">
             <Group justify="space-between">
               <Text size="sm" c="dimmed">{t('services.trafficLimit', 'Лимит')}:</Text>
-              <Text size="sm">{trafficStats.trafficLimit === '0' ? t('services.trafficUnlimited', 'Безлимит') : trafficStats.trafficLimit}</Text>
+              <Text size="sm">{trafficStats.trafficLimitBytes === '0' || trafficStats.trafficLimit === '0' ? t('services.trafficUnlimited', 'Безлимит') : trafficStats.trafficLimit}</Text>
             </Group>
             <Group justify="space-between">
               <Text size="sm" c="dimmed">{t('services.trafficUsed', 'Использовано')}:</Text>
@@ -807,6 +815,9 @@ function ServiceDetail({ service, onDelete, onChangeTariff }: ServiceDetailProps
               <Text size="sm" c="dimmed">{t('services.daysLeft', 'Осталось дней')}:</Text>
               <Text size="sm">{trafficStats.daysLeft}</Text>
             </Group>
+            <Button size="xs" variant="subtle" color="gray" leftSection={<IconRefresh size={14} />} onClick={fetchRemnaTraffic} mt="xs">
+              {t('common.refresh')}
+            </Button>
           </Stack>
         ) : null}
       </Modal>
