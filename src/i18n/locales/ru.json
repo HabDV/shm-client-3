@@ -40,6 +40,8 @@
     "confirmPasswordPlaceholder": "Повторите пароль",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",
+    "termsText": "Регистрируясь, вы соглашаетесь с",
+    "termsLink": "правилами использования",
     "loginLabel": "Логин",
     "passwordLabel": "Пароль",
     "emailLabel": "Email",
@@ -159,6 +161,8 @@
     "telegramDescription": "Привязка Telegram позволит получать уведомления о статусе услуг и платежей, так же оплачивать услуги Телеграмм звездами.",
     "partnerLink": "Партнёрская ссылка",
     "partnerLinkDescription": "Приглашайте друзей и получайте бонусы за их заказы и платежи.",
+    "referralsCount": "Рефералов",
+    "incomePercent": "Процент с оплат рефералов",
     "payHistory": "История платежей",
     "wdHistory": "История списаний"
   },

@@ -57,15 +57,51 @@ export function removePartnerCookie(): void {
   document.cookie = `${PARTNER_COOKIE_NAME}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax`;
 }
 
+// --- Invite link encoding (base64url) ---
+
+export function encodeInvite(partnerId: string | number): string {
+  const json = JSON.stringify({ pid: String(partnerId) });
+  return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+export function decodeInvite(encoded: string): string | null {
+  try {
+    const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+    const json = atob(base64 + padding);
+    const obj = JSON.parse(json);
+    if (obj && typeof obj.pid === 'string' && obj.pid) {
+      return obj.pid;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function parseAndSavePartnerId(): void {
   const urlParams = new URLSearchParams(window.location.search);
+
+  // New format: ?invite=<base64url>
+  const invite = urlParams.get('invite');
+  if (invite) {
+    const partnerId = decodeInvite(invite);
+    if (partnerId) {
+      setPartnerCookie(partnerId);
+    }
+    urlParams.delete('invite');
+    const newSearch = urlParams.toString();
+    window.history.replaceState({}, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
+    return;
+  }
+
+  // Legacy format: ?partner_id=<id> (backward compatibility)
   const partnerId = urlParams.get('partner_id');
   if (partnerId) {
     setPartnerCookie(partnerId);
     urlParams.delete('partner_id');
     const newSearch = urlParams.toString();
-    const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash;
-    window.history.replaceState({}, '', newUrl);
+    window.history.replaceState({}, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
   }
 }
 

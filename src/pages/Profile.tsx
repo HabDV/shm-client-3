@@ -5,6 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { useClipboard } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { userApi, telegramApi, userEmailApi } from '../api/client';
+import { encodeInvite } from '../api/cookie';
 import PayModal from '../components/PayModal';
 import PromoModal from '../components/PromoModal';
 import SecuritySettings from '../components/security/SecuritySettings';
@@ -25,6 +26,8 @@ interface UserProfile {
   discount: number;
   bonus: number;
   gid: number;
+  income_percent?: number;
+  referrals_count?: number;
 }
 
 interface ForecastNextItem {
@@ -98,7 +101,9 @@ export default function Profile() {
   const clipboard = useClipboard({ timeout: 1000 });
   const { t } = useTranslation();
   const basePath = config.SHM_BASE_PATH && config.SHM_BASE_PATH !== '/' ? config.SHM_BASE_PATH : '';
-  const partnerLink = `${window.location.origin}${basePath}?partner_id=${profile?.user_id || 0}`;
+  const partnerLink = profile?.user_id
+    ? `${window.location.origin}${basePath}?invite=${encodeInvite(profile.user_id)}`
+    : '';
 
   const updateCooldown = useCallback(() => {
     const lastSent = localStorage.getItem(RESEND_STORAGE_KEY);
@@ -421,16 +426,27 @@ export default function Profile() {
 
             <Divider my="md" />
 
-            <Group>
-              <div style={{ maxWidth: '80%' }}>
-                <Text size="sm"> {partnerLink}
+            <Group justify="space-between" align="flex-start">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Text size="sm" style={{ wordBreak: 'break-all' }}>{partnerLink}
                   <Tooltip label={clipboard.copied ? t('common.copied') : t('common.copy')}>
-                    <ActionIcon color={clipboard.copied ? 'teal' : 'gray'} variant="subtle" onClick={() => clipboard.copy(partnerLink)}>                      {clipboard.copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                    <ActionIcon color={clipboard.copied ? 'teal' : 'gray'} variant="subtle" onClick={() => clipboard.copy(partnerLink)}>
+                      {clipboard.copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
                     </ActionIcon>
                   </Tooltip>
                 </Text>
                 <Text size="xs" c="dimmed">{t('profile.partnerLinkDescription')}</Text>
               </div>
+              {(profile.income_percent != null || profile.referrals_count != null) && (
+                <Stack gap={2} align="flex-end" style={{ flexShrink: 0 }}>
+                  {(profile.income_percent ?? 0) > 0 && (
+                    <Text size="sm" fw={600} c="green">{profile.income_percent}%</Text>
+                  )}
+                  {profile.referrals_count != null && (
+                    <Text size="xs" c="dimmed">{t('profile.referralsCount')}: {profile.referrals_count}</Text>
+                  )}
+                </Stack>
+              )}
             </Group>
 
             <Divider my="md" />
