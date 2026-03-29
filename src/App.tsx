@@ -117,7 +117,7 @@ function WebAppHeader({ onShowVersion }: { onShowVersion?: () => void }) {
       >
         {computedColorScheme === 'light' ? <IconMoon size={20} /> : <IconSun size={20} />}
       </ActionIcon>
-      {!hasTelegramWebAppAutoAuth && (
+      {(!hasTelegramWebAppAutoAuth || isTelegramWebApp) && (
         <ActionIcon
           onClick={handleLogout}
           variant="subtle"
@@ -526,7 +526,7 @@ function AppContent() {
               </ActionIcon> }
               <LanguageSwitcher />
               <ThemeToggle />
-              {!hasTelegramWebAppAutoAuth && (
+              {(!hasTelegramWebAppAutoAuth || isTelegramWebApp) && (
               <ActionIcon
                 onClick={logout}
                 variant="default"
