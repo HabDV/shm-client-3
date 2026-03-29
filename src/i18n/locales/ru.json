@@ -40,8 +40,6 @@
     "confirmPasswordPlaceholder": "Повторите пароль",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",
-    "termsText": "Регистрируясь, вы соглашаетесь с",
-    "termsLink": "правилами использования",
     "loginLabel": "Логин",
     "passwordLabel": "Пароль",
     "emailLabel": "Email",
@@ -161,8 +159,6 @@
     "telegramDescription": "Привязка Telegram позволит получать уведомления о статусе услуг и платежей, так же оплачивать услуги Телеграмм звездами.",
     "partnerLink": "Партнёрская ссылка",
     "partnerLinkDescription": "Приглашайте друзей и получайте бонусы за их заказы и платежи.",
-    "referralsCount": "Рефералов",
-    "incomePercent": "Процент с оплат рефералов",
     "payHistory": "История платежей",
     "wdHistory": "История списаний"
   },
@@ -431,13 +427,5 @@
   },
   "security": {
     "changePasswordDescription": "Измените пароль для входа в личный кабинет"
-  },
-  "pwa": {
-    "installTitle": "Установить приложение",
-    "installDescription": "Добавьте на главный экран для удобного доступа",
-    "installButton": "Установить",
-    "updateTitle": "Доступно обновление",
-    "updateDescription": "Новая версия готова. Перезагрузите страницу.",
-    "updateButton": "Обновить"
   }
 }

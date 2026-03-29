@@ -450,19 +450,8 @@ export default function Login() {
   };
 
   return (
-    <Center
-      mih="100dvh"
-      style={{ position: 'relative', alignItems: 'flex-start', paddingTop: '5vh', paddingBottom: '5vh' }}
-      px={{ base: 'md', sm: 0 }}
-    >
-      <Card
-        withBorder
-        radius="md"
-        p={{ base: 'md', sm: 'xl' }}
-        w={{ base: '100%', sm: 400 }}
-        maw={400}
-        style={{ position: 'relative', zIndex: 1 }}
-      >
+    <Center h="80vh" style={{ position: 'relative' }}>
+      <Card withBorder radius="md" p="xl" w={400}>
         <Stack gap="lg">
           <Group justify="space-between" align="center">
             <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
@@ -582,21 +571,6 @@ export default function Login() {
                         ↻
                       </Button>
                     </Group>
-                  )}
-                  {mode === 'register' && config.TERMS_URL && (
-                    <Text size="xs" c="dimmed" ta="center">
-                      {t('auth.termsText')}{' '}
-                      <Text
-                        component="a"
-                        href={config.TERMS_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        c="blue"
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {t('auth.termsLink')}
-                      </Text>
-                    </Text>
                   )}
                   <Button
                     type="submit"
@@ -805,20 +779,20 @@ export default function Login() {
       )}
 
       {config.SUPPORT_LINK && (
-        <ActionIcon
+        <Button
           onClick={handleSupportLink}
           style={{
             position: 'fixed',
-            bottom: 16,
-            right: 16,
+            bottom: 24,
+            right: 24,
             zIndex: 200,
           }}
+          leftSection={<IconHeadset size={20} />}
           radius="xl"
-          size="xl"
-          aria-label={t('common.support')}
+          size="md"
         >
-          <IconHeadset size={20} />
-        </ActionIcon>
+          {t('common.support')}
+        </Button>
       )}
     </Center>
   );

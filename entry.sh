@@ -25,73 +25,11 @@ fi
 if [ ! -z "$APP_NAME" ]; then
     sed -i "s|<title>.*</title>|<title>${APP_NAME}</title>|" /app/index.html
     sed -i "s|<meta property=\"og:title\" content=\".*\" />|<meta property=\"og:title\" content=\"${APP_NAME}\" />|" /app/index.html
-    sed -i "s|<meta name=\"apple-mobile-web-app-title\" content=\".*\" />|<meta name=\"apple-mobile-web-app-title\" content=\"${APP_NAME}\" />|" /app/index.html
 fi
 
 if [ ! -z "$APP_DESCRIPTION" ]; then
     sed -i "s|<meta name=\"description\" content=\".*\" />|<meta name=\"description\" content=\"${APP_DESCRIPTION}\" />|" /app/index.html
     sed -i "s|<meta property=\"og:description\" content=\".*\" />|<meta property=\"og:description\" content=\"${APP_DESCRIPTION}\" />|" /app/index.html
-fi
-
-# Patch manifest.json with APP_NAME, APP_DESCRIPTION, LOGO_URL
-MANIFEST_NAME="${APP_NAME:-SHM Client}"
-MANIFEST_SHORT="${APP_NAME:-SHM}"
-MANIFEST_DESC="${APP_DESCRIPTION:-Powerful and flexible client for SHM}"
-MANIFEST_ICON="${LOGO_URL:-favicon.jpg}"
-
-cat > "/app/manifest.json" << MANIFEST
-{
-  "name": "${MANIFEST_NAME}",
-  "short_name": "${MANIFEST_SHORT}",
-  "description": "${MANIFEST_DESC}",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "background_color": "#ffffff",
-  "theme_color": "#228be6",
-  "orientation": "portrait-primary",
-  "lang": "ru",
-  "categories": ["utilities", "finance"],
-  "icons": [
-    {
-      "src": "${MANIFEST_ICON}",
-      "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any"
-    },
-    {
-      "src": "${MANIFEST_ICON}",
-      "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any"
-    },
-    {
-      "src": "${MANIFEST_ICON}",
-      "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Услуги",
-      "short_name": "Услуги",
-      "url": "./",
-      "icons": [{ "src": "${MANIFEST_ICON}", "sizes": "96x96" }]
-    },
-    {
-      "name": "Профиль",
-      "short_name": "Профиль",
-      "url": "./profile",
-      "icons": [{ "src": "${MANIFEST_ICON}", "sizes": "96x96" }]
-    }
-  ]
-}
-MANIFEST
-
-if [ ! -z "$LOGO_URL" ]; then
-    sed -i "s|<link rel=\"apple-touch-icon\" href=\".*\" />|<link rel=\"apple-touch-icon\" href=\"${LOGO_URL}\" />|" /app/index.html
 fi
 
 cat > "/app/config.js" << EOF
@@ -157,9 +95,7 @@ window.__APP_CONFIG__ = {
   IOS_PROXY_URL_SCHEMA: "${IOS_PROXY_URL_SCHEMA:-}",
   ANDROID_PROXY_URL_SCHEMA: "${ANDROID_PROXY_URL_SCHEMA:-}",
   CAPTCHA_ENABLED: "${CAPTCHA_ENABLED:-false}",
-  ORDER_SORTING: "${ORDER_SORTING:-cost_asc}",
-  TERMS_URL: "${TERMS_URL:-}",
-  NEURAL_BG: "${NEURAL_BG:-false}"
+  ORDER_SORTING: "${ORDER_SORTING:-cost_asc}"
 };
 EOF
 

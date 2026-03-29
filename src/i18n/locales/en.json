@@ -40,8 +40,6 @@
     "confirmPasswordPlaceholder": "Repeat password",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
-    "termsText": "By registering, you agree to the",
-    "termsLink": "terms of service",
     "loginLabel": "Login",
     "passwordLabel": "Password",
     "emailLabel": "Email",
@@ -161,8 +159,6 @@
     "telegramDescription": "Linking Telegram will allow you to receive notifications about the status of services and payments, as well as pay for Telegram services with stars.",
     "partnerLink": "Partner link",
     "partnerLinkDescription": "Invite friends and receive bonuses for their orders and payments.",
-    "referralsCount": "Referrals",
-    "incomePercent": "Referral income percent",
     "payHistory": "Payment history",
     "wdHistory": "Withdrawal history"
   },
@@ -431,13 +427,5 @@
   },
   "security": {
     "changePasswordDescription": "Change your password for logging into your account"
-  },
-  "pwa": {
-    "installTitle": "Install App",
-    "installDescription": "Add to home screen for a better experience",
-    "installButton": "Install",
-    "updateTitle": "Update available",
-    "updateDescription": "A new version is ready. Reload to apply.",
-    "updateButton": "Reload"
   }
 }
